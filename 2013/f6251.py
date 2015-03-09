@@ -22,6 +22,10 @@ class F6251(Form):
         if '10' in f1040:
             # TODO: refunds from 1040, line 21
             f['7'] = -f1040['10']
+
+        if (f.rowsum([str(i) for i in xrange(8,28)]) or 0) < 0:
+            f.must_file = True
+
         f['28'] = f.rowsum([str(i) for i in xrange(1,28)])
         if inputs['status'] == FilingStatus.SEPARATE:
             if f['28'] > 400150:
@@ -33,7 +37,6 @@ class F6251(Form):
         if f['30'] <= 0:
             # TODO: form 4972, schedule J
             f['34'] = f1040['44'] - f1040['47']
-            f.must_file = True
             return
 
         # TODO: form 2555
@@ -75,11 +78,14 @@ class F6251(Form):
 
         # TODO: form 1116
         f['32'] = f1040['47']
+        f.comment['33'] = 'Tentative Minimum Tax'
         f['33'] = f['31'] - f['32']
         # TODO: form 4972, schedule J
+        f.comment['34'] = 'Regular Tax'
         f['34'] = f1040['44'] - f1040['47']
-        if f['33'] > f['34']:
-            f['35'] = f['33'] - f['34']
+        f.comment['35'] = 'AMT'
+        f['35'] = max(0, f['33'] - f['34'])
+        if f['31'] > f['34']:
             f.must_file = True
 
     def exemption(f, inputs):

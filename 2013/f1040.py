@@ -6,6 +6,8 @@ from f1040sd import F1040sd
 from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
+from f8801 import F8801
+from f8801_2014 import F8801_2014
 from f8959 import F8959
 from f8960 import F8960
 import copy
@@ -140,6 +142,9 @@ class F1040(Form):
         f['46'] = f.rowsum(['44', '45'])
 
         f['51'] = f.child_tax_credit(inputs)
+        f8801 = F8801(inputs, f, f6251)
+        f['53'] = f8801.get('25')
+        f.addForm(f8801)
         f.comment['54'] = 'Total credits'
         f['54'] = f.rowsum(['47', '48', '49', '50', '51', '52', '53'])
         f['55'] = max(0, f['46'] - f['54'])
@@ -180,6 +185,9 @@ class F1040(Form):
         else:
             f.comment['76'] = 'Amount you owe'
             f['76'] = f['61'] - f['72']
+
+        f8801_2014 = F8801_2014(inputs, f, f6251, f8801, sd)
+        f.addForm(f8801_2014)
 
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
