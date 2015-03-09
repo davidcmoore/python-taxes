@@ -5,6 +5,7 @@ from f1040sd import F1040sd
 from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
+from f8801 import F8801
 from f8959 import F8959
 from f8960 import F8960
 import copy
@@ -109,7 +110,7 @@ class F1040(Form):
             f['40'] = sa['29']
             f.addForm(sa)
         else:
-            # TODO: claimed as dependent or born before Jan 2, 1949 or blind
+            # TODO: claimed as dependent or born before Jan 2, 1950 or blind
             f.comment['40'] = 'Standard deduction'
             f['40'] = std
 
@@ -125,60 +126,63 @@ class F1040(Form):
         f.comment['44'] = 'Tax'
         f['44'] = f.div_cap_gain_tax_worksheet(inputs, sd)['27']
 
-        # Compute line 47 now because it's needed by AMT
+        # Compute line 46 and 48 now because it's needed by AMT
         foreign_tax = inputs.get('foreign_tax', 0)
         assert(foreign_tax < 300 or (foreign_tax < 600 and inputs['status'] == FilingStatus.JOINT))
         if foreign_tax:
-            f['47'] = min(foreign_tax, f['44'])
+            f['48'] = min(foreign_tax, f['44'] + f['46'])
 
         f6251 = F6251(inputs, f, sa if file_sched_a else None, sd)
         f.comment['45'] = 'AMT'
         f['45'] = f6251.get('35')
         f.addForm(f6251)
 
-        f['46'] = f.rowsum(['44', '45'])
+        f['47'] = f.rowsum(['44', '45', '46'])
 
-        f['51'] = f.child_tax_credit(inputs)
-        f.comment['54'] = 'Total credits'
-        f['54'] = f.rowsum(['47', '48', '49', '50', '51', '52', '53'])
-        f['55'] = max(0, f['46'] - f['54'])
+        f['52'] = f.child_tax_credit(inputs)
+        f8801 = F8801(inputs, f, f6251)
+        f['54'] = f8801.get('25')
+        f.addForm(f8801)
+        f.comment['55'] = 'Total credits'
+        f['55'] = f.rowsum(['48', '49', '50', '51', '52', '53', '54'])
+        f['56'] = max(0, f['47'] - f['55'])
         if inputs['status'] == FilingStatus.JOINT:
             if sse[0].mustFile() or sse[1].mustFile():
-                f['56'] = ((sse[0]['A5'] or sse[0]['B12'] or 0) +
+                f['57'] = ((sse[0]['A5'] or sse[0]['B12'] or 0) +
                            (sse[1]['A5'] or sse[1]['B12'] or 0))
         else:
             if sse.mustFile():
-                f['56'] = sse['A5'] or sse['B12']
+                f['57'] = sse['A5'] or sse['B12']
         f8959 = F8959(inputs, f, sse)
         f8960 = F8960(inputs, f, sa if file_sched_a else None)
-        f['60'] = f8959['18'] + f8960['17'] or None
+        f['62'] = f8959['18'] + f8960['17'] or None
         f.addForm(f8959)
         f.addForm(f8960)
-        f.comment['61'] = 'Total tax'
-        f['61'] = f.rowsum(['55', '56', '57', '58', '59a', '59b', '60'])
-        f['62'] = inputs.get('withholding')
-        f['63'] = inputs.get('estimated_payments', 0) + f8959['24']
+        f.comment['63'] = 'Total tax'
+        f['63'] = f.rowsum(['56', '57', '58', '59', '60a', '60b', '61', '62'])
+        f['64'] = inputs.get('withholding', 0) + f8959['24']
+        f['65'] = inputs.get('estimated_payments')
         # TODO: EIC
 
         if inputs.get('ss_withheld'):
             if inputs['status'] == FilingStatus.JOINT:
                 if inputs['ss_withheld'][0] > f.SS_MAX:
-                    f['69'] = inputs['ss_withheld'][0] - f.SS_MAX
+                    f['71'] = inputs['ss_withheld'][0] - f.SS_MAX
                 if inputs['ss_withheld'][1] > f.SS_MAX:
-                    f['69'] += inputs['ss_withheld'][1] - f.SS_MAX
+                    f['71'] += inputs['ss_withheld'][1] - f.SS_MAX
             else:
                 if inputs['ss_withheld'] > f.SS_MAX:
-                    f['69'] = inputs['ss_withheld'] - f.SS_MAX
+                    f['71'] = inputs['ss_withheld'] - f.SS_MAX
 
-        f.comment['72'] = 'Total payments'
-        f['72'] = f.rowsum(['62', '63', '64a', '65', '66', '67', '68', '69',
-                            '70', '71'])
-        if f['72'] > f['61']:
-            f.comment['73'] = 'Refund'
-            f['73'] = f['72'] - f['61']
+        f.comment['74'] = 'Total payments'
+        f['74'] = f.rowsum(['64', '65', '66a', '67', '68', '69', '70', '71',
+                            '72', '73'])
+        if f['74'] > f['63']:
+            f.comment['75'] = 'Refund'
+            f['75'] = f['74'] - f['63']
         else:
-            f.comment['76'] = 'Amount you owe'
-            f['76'] = f['61'] - f['72']
+            f.comment['78'] = 'Amount you owe'
+            f['78'] = f['63'] - f['74']
 
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
@@ -264,9 +268,9 @@ class F1040(Form):
         if w['1'] <= w['5']:
             return None
         w['6'] = w['1'] - w['5']
-        w['7'] = f['46']
+        w['7'] = f['47']
         # TODO: forms 5696, 8910, 8936, schedule R
-        w['8'] = f.rowsum(['47', '48', '49', '50'])
+        w['8'] = f.rowsum(['48', '49', '50', '51'])
         if w['7'] == w['8']:
             assert('TODO: additional child tax credit')
             return None

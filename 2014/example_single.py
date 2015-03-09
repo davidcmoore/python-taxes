@@ -19,7 +19,7 @@ inputs = {
     'medicare_withheld':   1450.00, # W2 box 6
     'state_withholding':  10000.00, # W2 box 17
 
-    # These are other state tax payments made in 2013 not included in
+    # These are other state tax payments made in 2014 not included in
     # 'state_withholding' that are deductible on schedule A:
     'extra_state_tax_payments': 1000.00,
 

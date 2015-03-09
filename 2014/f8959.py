@@ -21,6 +21,7 @@ class F8959(Form):
             if sse.mustFile():
                 f['8'] = max(0, sse['A4'] or sse['B6'])
         if f.get('8'):
+            assert(f['8'] >= 400)
             f['9'] = f.THRESHOLDS[inputs['status']]
             f['10'] = f.get('4')
             f['11'] = max(0, f['9'] - f['10'])

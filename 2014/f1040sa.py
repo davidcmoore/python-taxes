@@ -7,7 +7,7 @@ class F1040sa(Form):
         super(F1040sa, f).__init__(inputs)
         if f['1']:
             f['2'] = f1040['38']
-            # TODO: 7.5% if born before January 2, 1949
+            # TODO: 7.5% if born before January 2, 1950
             f['3'] = f['2'] * .10
             f['4'] = max(0, f['1'] - f['3'])
         f['5'] = inputs['state_withholding'] + \

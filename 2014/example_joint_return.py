@@ -4,9 +4,6 @@
 # of 100k. Also, the first spouse has some investment income and
 # business (Schedule C) income.
 #
-# This example increases the amount of state tax paid on Schedule A, causing
-# this couple to be paying AMT instead of regular tax. Form 6251 is added.
-#
 # A balance is owed on the return.
 #
 # On the state return, a refund is due.
@@ -30,9 +27,9 @@ inputs = {
     'medicare_withheld': [  1450.00,   1450.00], # W2 box 6
     'state_withholding':              18000.00,  # W2 box 17
 
-    # These are other state tax payments made in 2013 not included in
+    # These are other state tax payments made in 2014 not included in
     # 'state_withholding' that are deductible on schedule A:
-    'extra_state_tax_payments': 8000.00,
+    'extra_state_tax_payments': 3000.00,
 
     'taxable_interest':    1500.00,
     'tax_exempt_interest':  700.00,

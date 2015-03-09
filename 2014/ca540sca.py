@@ -1,7 +1,7 @@
 from form import Form, FilingStatus
 
 class CA540sca(Form):
-    STD_DED = [3906, 7812, 3906, 7812, 7812]
+    STD_DED = [3992, 7984, 3992, 7984, 7984]
 
     def __init__(f, inputs, f1040, f1040sa):
         super(CA540sca, f).__init__(inputs)
@@ -27,13 +27,15 @@ class CA540sca(Form):
             f.must_file = True
 
     def itemized_deductions_worksheet(f, inputs, f1040, f1040sa):
-        LIMITS = [172615, 345235, 172615, 258927, 345235]
+        LIMITS = [176413, 352830, 176413, 264623, 352830]
         w = {}
         w['1'] = f['42']
         if f1040['37'] <= LIMITS[inputs['status']]:
             return w['1']
         w['2'] = f1040sa.rowsum(['4', '14', '20']) or 0
         w['3'] = w['1'] - w['2']
+        if w['3'] == 0:
+            return w['1']
         w['4'] = w['3'] * .8
         w['5'] = f1040['37']
         w['6'] = LIMITS[inputs['status']]

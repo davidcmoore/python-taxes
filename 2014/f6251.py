@@ -23,18 +23,22 @@ class F6251(Form):
         if '10' in f1040:
             # TODO: refunds from 1040, line 21
             f['7'] = -f1040['10']
+
+        if (f.rowsum([str(i) for i in xrange(8,28)]) or 0) < 0:
+            f.must_file = True
+
         f['28'] = f.rowsum([str(i) for i in xrange(1,28)])
         if inputs['status'] == FilingStatus.SEPARATE:
-            if f['28'] > 400150:
-                f['28'] += 40400
-            elif f['28'] > 238550:
-                f['28'] += (f['28'] - 238550) * .25
+            if f['28'] >= 406650:
+                f['28'] += 41050
+            elif f['28'] > 242450:
+                f['28'] += (f['28'] - 242450) * .25
         f['29'] = f.exemption(inputs)
         f['30'] = f['28'] - f['29']
         if f['30'] <= 0:
             # TODO: form 4972, schedule J
-            f['34'] = f1040['44'] - f1040['47']
-            f.must_file = True
+            f['30'] = 0
+            f['34'] = f1040['44'] + f1040['46'] - f1040['48']
             return
 
         # TODO: form 2555
@@ -56,31 +60,38 @@ class F6251(Form):
             f['46'] = min(f['36'], f['37'])
             f['47'] = min(f['45'], f['46'])
             f['48'] = f['46'] - f['47']
-            f['49'] = f.line49_worksheet(inputs, cg_worksheet)
-            f['50'] = min(f['48'], f['49'])
-            f['51'] = f['50'] * .15
-            f['52'] = f['47'] + f['50']
-            if f['52'] != f['36']:
-                f['53'] = f['46'] - f['52']
-                f['54'] = f['53'] * .20
+            f['49'] = f1040.BRACKET_LIMITS[inputs['status']][5]
+            f['50'] = f['45']
+            f['51'] = cg_worksheet['7']
+            f['52'] = f['50'] + f['51']
+            f['53'] = max(0, f['49'] - f['52'])
+            f['54'] = min(f['48'], f['53'])
+            f['55'] = f['54'] * .15
+            f['56'] = f['47'] + f['54']
+            if f['56'] != f['36']:
+                f['57'] = f['46'] - f['56']
+                f['58'] = f['57'] * .20
                 if f['38']:
-                    f['55'] = f.rowsum(['41', '52', '53'])
-                    f['56'] = f['36'] - f['55']
-                    f['57'] = f['56'] * .25
-            f['58'] = f.rowsum(['42', '51', '54', '57'])
-            f['59'] = f.amt(inputs['status'], f['36'])
-            f['60'] = min(f['58'], f['59'])
-            f['31'] = f['60']
+                    f['59'] = f.rowsum(['41', '56', '57'])
+                    f['60'] = f['36'] - f['59']
+                    f['61'] = f['60'] * .25
+            f['62'] = f.rowsum(['42', '55', '58', '61'])
+            f['63'] = f.amt(inputs['status'], f['36'])
+            f['64'] = min(f['62'], f['63'])
+            f['31'] = f['64']
         else:
             f['31'] = f.amt(inputs['status'], f['30'])
 
         # TODO: form 1116
-        f['32'] = f1040['47']
+        f['32'] = f1040['48']
+        f.comment['33'] = 'Tentative Minimum Tax'
         f['33'] = f['31'] - f['32']
         # TODO: form 4972, schedule J
-        f['34'] = f1040['44'] - f1040['47']
-        if f['33'] > f['34']:
-            f['35'] = f['33'] - f['34']
+        f.comment['34'] = 'Regular Tax'
+        f['34'] = f1040['44'] + f1040['46'] - f1040['48']
+        f.comment['35'] = 'AMT'
+        f['35'] = max(0, f['33'] - f['34'])
+        if f['31'] > f['34']:
             f.must_file = True
 
     def exemption(f, inputs):
@@ -100,17 +111,6 @@ class F6251(Form):
             return val * .26
         else:
             return val * .28 - thresh * .02
-
-    def line49_worksheet(f, inputs, cg_worksheet):
-        LIMITS = [400000, 450000, 225000, 425000, 450000]
-        w = {}
-        w['1'] = LIMITS[inputs['status']]
-        w['2'] = f['45']
-        # TODO: schedule D tax worksheet
-        w['3'] = cg_worksheet['7']
-        w['4'] = w['2'] + w['3']
-        w['5'] = max(0, w['1'] - w['4'])
-        return w['5']
 
     def title(self):
         return 'Form 6251'

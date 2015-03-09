@@ -20,8 +20,11 @@ class F2441(Form):
         # TODO: partnership/proprietorship-provided childcare benefits
         f['22'] = 0
         f['23'] = f['15'] - f['22']
+        f.comment['24'] = 'Deductible benefits'
         f['24'] = min(f['20'], f['21'], f['22'])
+        f.comment['25'] = 'Excluded benefits'
         f['25'] = min(f['20'], f['21'])
+        f.comment['26'] = 'Taxable benefits'
         f['26'] = max(0, f['23'] - f['25'])
         assert(f['24'] == 0)
         if f['24'] or f['25'] or f['26']:

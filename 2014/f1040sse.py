@@ -23,7 +23,7 @@ class F1040sse(Form):
             if self['A4'] <= SS_WAGE_LIMIT:
                 self['A5'] = self['A4'] * .153
             else:
-                self['A5'] = self['A4'] * .029 + 14098.80
+                self['A5'] = self['A4'] * .029 + SS_WAGE_LIMIT * .124
             self['A6'] = self['A5'] * .50
         else:
             self['B2'] = inputs.get('business_income')

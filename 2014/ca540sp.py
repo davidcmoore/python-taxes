@@ -1,22 +1,22 @@
 from form import Form, FilingStatus
 
 class CA540sp(Form):
-    LIMITS = [172615, 345235, 172615, 258927, 345235]
-    EXEMPTION_LIMITS = [238051, 317401, 158700, 238051, 317401]
-    EXEMPTIONS = [63481, 84640, 42319, 63481, 84640]
+    EXEMPTION_LIMITS = [243288, 324384, 162191, 243288, 324384]
+    EXEMPTIONS = [64878, 86502, 43250, 64878, 86502]
 
     def __init__(f, inputs, ca540, ca540sca, f1040, f1040sa):
         super(CA540sp, f).__init__(inputs)
         if ca540['18'] != ca540sca.STD_DED[inputs['status']]:
             f['2'] = min(f1040sa['4'], .025 * f1040['37'])
             f['3'] = f1040sa.rowsum(['6', '7'])
-            f['4'] = f1040sa.rowsum(['10', '11', '12'])
             f['5'] = f1040sa.get('27')
         else:
             f['1'] = ca540['18']
         f['14'] = f.rowsum(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
                             '11', '12', '13'])
         f['15'] = ca540['19']
+        if not f['15']:
+            f['15'] = ca540['17'] - ca540['18']
         f['16'] = ca540sca.rowsum(['B21d', 'B21e'])
         f['17'] = -max(0, f1040['12'])
         if ca540sca.mustFile():
