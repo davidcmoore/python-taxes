@@ -5,17 +5,17 @@ from ca540sp import CA540sp
 import math
 
 class CA540(Form):
-    EXEMPTION = 108
-    DEPENDENT_EXEMPTION = 333
+    EXEMPTION = 109
+    DEPENDENT_EXEMPTION = 337
     BRACKET_RATES = [.01, .02, .04, .06, .08, .093, .103, .113, .123]
     BRACKET_LIMITS = [
-        [7749, 18371, 28995, 40250, 50869, 259844, 311812, 519687],   # SINGLE
-        [15498, 36742, 57990, 80500, 101738, 519688, 623624, 1039374],# JOINT
-        [7749, 18371, 28995, 40250, 50869, 259844, 311812, 519687],   # SEPERATE
-        [15508, 36743, 47366, 58621, 69242, 353387, 424065, 706774],  # HEAD
-        [15498, 36742, 57990, 80500, 101738, 519688, 623624, 1039374],# WIDOW
+        [7850, 18610, 29372, 40773, 51530, 263222, 315866, 526443],   # SINGLE
+        [15700, 37220, 58744, 81546, 103060, 526444, 631732, 1052886],# JOINT
+        [7850, 18610, 29372, 40773, 51530, 263222, 315866, 526443],   # SEPARATE
+        [15710, 37221, 47982, 59383, 70142, 357981, 429578, 715962],  # HEAD
+        [15700, 37220, 58744, 81546, 103060, 526444, 631732, 1052886],# WIDOW
     ]
-    SDI_MAX = 1016.36
+    SDI_MAX = 939.40
     MENTAL_HEALTH_LIMIT = 1000000
     MENTAL_HEALTH_RATE = .01
 
@@ -80,17 +80,22 @@ class CA540(Form):
             else:
                 if inputs['ca_sdi_withheld'] > f.SDI_MAX:
                     f['74'] = inputs['ca_sdi_withheld'] - f.SDI_MAX
-        f.comment['75'] = 'Total payments'
-        f['75'] = f.rowsum(['71', '72', '73', '74'])
+        f.comment['76'] = 'Total payments'
+        f['76'] = f.rowsum(['71', '72', '73', '74'])
 
-        if f['75'] > f['64']:
-            f.comment['91'] = 'Refund'
-            f['91'] = f['75'] - f['64']
+        if f['76'] > f['91']:
+            f['92'] = f['76'] - f['91']
         else:
-            f.comment['94'] = 'Tax due'
-            f['94'] = f['64'] - f['75']
+            f['93'] = f['91'] - f['76']
+
+        if f['92'] > f['64']:
+            f.comment['94'] = 'Refund'
+            f['94'] = f['92'] - f['64']
+        else:
+            f.comment['97'] = 'Tax due'
+            f['97'] = f['64'] - f['92']
         f.comment['111'] = 'Amount you owe'
-        f['111'] = f.rowsum(['94', '95', '110'])
+        f['111'] = f.rowsum(['93', '97', '110'])
 
     def tax_rate_schedule(f, status, val):
         # TODO: rounding of amounts less than 100000 to match tax table
@@ -107,7 +112,7 @@ class CA540(Form):
         return tax
 
     def agi_limitation_worksheet(f, status):
-        LIMITS = [176413, 352830, 176413, 264623, 352830]
+        LIMITS = [178706, 357417, 178706, 268063, 357417]
         w = {}
         w['a'] = f['13']
         w['b'] = LIMITS[status]

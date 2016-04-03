@@ -1,8 +1,8 @@
 from form import Form, FilingStatus
 
 class CA540sp(Form):
-    EXEMPTION_LIMITS = [243288, 324384, 162191, 243288, 324384]
-    EXEMPTIONS = [64878, 86502, 43250, 64878, 86502]
+    EXEMPTION_LIMITS = [246451, 328601, 164299, 246451, 328601]
+    EXEMPTIONS = [65721, 87627, 43812, 65721, 87627]
 
     def __init__(f, inputs, ca540, ca540sca, f1040, f1040sa):
         super(CA540sp, f).__init__(inputs)

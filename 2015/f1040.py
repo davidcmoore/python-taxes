@@ -139,6 +139,8 @@ class F1040(Form):
 
         f['47'] = f.rowsum(['44', '45', '46'])
 
+        f['49'] = f2441.part2(f)
+
         f['52'] = f.child_tax_credit(inputs)
         f8801 = F8801(inputs, f, f6251)
         f['54'] = f8801.get('25')

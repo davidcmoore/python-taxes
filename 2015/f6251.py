@@ -9,8 +9,7 @@ class F6251(Form):
         super(F6251, f).__init__(inputs)
         if sched_a:
             f['1'] = f1040.get('41')
-            if sched_a['4']:
-                f['2'] = min(sched_a['4'], f1040['38'] * .025)
+            # TODO: 65 or older
             f['3'] = sched_a.get('9')
             f['5'] = sched_a.get('27')
             sa_worksheet = sched_a.worksheet(inputs, f1040)
@@ -27,10 +26,10 @@ class F6251(Form):
 
         f['28'] = f.rowsum([str(i) for i in xrange(1,28)])
         if inputs['status'] == FilingStatus.SEPARATE:
-            if f['28'] >= 406650:
-                f['28'] += 41050
-            elif f['28'] > 242450:
-                f['28'] += (f['28'] - 242450) * .25
+            if f['28'] >= 413050:
+                f['28'] += 41700
+            elif f['28'] > 246250:
+                f['28'] += (f['28'] - 246250) * .25
         f['29'] = f.exemption(inputs)
         f['30'] = f['28'] - f['29']
         if f['30'] <= 0:
@@ -39,6 +38,7 @@ class F6251(Form):
             f['34'] = f1040['44'] + f1040['46'] - f1040['48']
             return
 
+        # TODO: capital gains refigured for the AMT
         # TODO: form 2555
         if (f1040['13'] and not sched_d.mustFile()) or f1040['9b'] or \
                 (sched_d['15'] > 0 and sched_d['16'] > 0):
