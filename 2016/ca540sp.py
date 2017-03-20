@@ -1,8 +1,8 @@
 from form import Form, FilingStatus
 
 class CA540sp(Form):
-    EXEMPTION_LIMITS = [246451, 328601, 164299, 246451, 328601]
-    EXEMPTIONS = [65721, 87627, 43812, 65721, 87627]
+    EXEMPTION_LIMITS = [251626, 335502, 167749, 251626, 335502]
+    EXEMPTIONS = [67101, 89467, 44732, 67101, 89467]
 
     def __init__(f, inputs, ca540, ca540sca, f1040, f1040sa):
         super(CA540sp, f).__init__(inputs)
@@ -17,13 +17,13 @@ class CA540sp(Form):
         f['15'] = ca540['19']
         if not f['15']:
             f['15'] = ca540['17'] - ca540['18']
-        f['16'] = ca540sca.rowsum(['B21d', 'B21e'])
+        f['16'] = ca540sca.rowsum(['B21b', 'B21d', 'B21e'])
         f['17'] = -max(0, f1040['12'])
-        if ca540sca.mustFile():
-            f['18'] = ca540sca['42'] - ca540sca['43'] or None
+        if ca540['18'] != ca540sca.STD_DED[inputs['status']]:
+            f['18'] = -(ca540sca['42'] - ca540sca['43']) or None
         f['19'] = f.rowsum(['14', '15', '16', '17', '18'])
         f['21'] = f['19'] - f['20']
-        assert(inputs['status'] != FilingStatus.SEPARATE or f['21'] <= 327976)
+        assert(inputs['status'] != FilingStatus.SEPARATE or f['21'] <= 346677)
 
         f['22'] = f.exemption(inputs)
         f['23'] = max(0, f['21'] - f['22'])

@@ -6,6 +6,7 @@ from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
 from f8801 import F8801
+#from f8801_2017 import F8801_2017
 from f8959 import F8959
 from f8960 import F8960
 import copy
@@ -110,7 +111,7 @@ class F1040(Form):
             f['40'] = sa['29']
             f.addForm(sa)
         else:
-            # TODO: claimed as dependent or born before Jan 2, 1950 or blind
+            # TODO: claimed as dependent or born before Jan 2, 1952 or blind
             f.comment['40'] = 'Standard deduction'
             f['40'] = std
 
@@ -186,6 +187,8 @@ class F1040(Form):
             f.comment['78'] = 'Amount you owe'
             f['78'] = f['63'] - f['74']
 
+        #f8801_2017 = F8801_2017(inputs, f, f6251, f8801, sd)
+        #f.addForm(f8801_2017)
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
         w = {}
@@ -274,11 +277,11 @@ class F1040(Form):
         # TODO: forms 5696, 8910, 8936, schedule R
         w['8'] = f.rowsum(['48', '49', '50', '51'])
         if w['7'] == w['8']:
-            assert('TODO: additional child tax credit')
+            raise RuntimeError('TODO: additional child tax credit')
             return None
         w['9'] = w['7'] - w['8']
         if w['6'] > w['9']:
-            assert('TODO: additional child tax credit')
+            raise RuntimeError('TODO: additional child tax credit')
             w['10'] = w['9']
         else:
             w['10'] = w['6']
