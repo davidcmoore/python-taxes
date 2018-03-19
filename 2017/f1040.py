@@ -6,7 +6,7 @@ from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
 from f8801 import F8801
-from f8801_2017 import F8801_2017
+#from f8801_2018 import F8801_2018
 from f8959 import F8959
 from f8960 import F8960
 import copy
@@ -21,17 +21,17 @@ import math
 #   tax_exempt_interest (optional)
 
 class F1040(Form):
-    STD_DED = [6300, 12600, 6300, 9300, 12600]
+    STD_DED = [6350, 12700, 6350, 9350, 12700]
     EXEMPTION = 4050
     BRACKET_RATES = [0.10, 0.15, 0.25, 0.28, 0.33, 0.35, 0.396]
     BRACKET_LIMITS = [
-        [9275, 37650, 91150, 190150, 413350, 415050],   # SINGLE
-        [18550, 75300, 151900, 231450, 413350, 466950], # JOINT
-        [9275, 37650, 75950, 115725, 206675, 233475],   # SEPARATE
-        [13250, 50400, 130150, 210800, 413350, 441000], # HEAD
-        [18550, 75300, 151900, 231450, 413350, 466950], # WIDOW
+        [9325, 37950, 91900, 191650, 416700, 418400],   # SINGLE
+        [18650, 75900, 153100, 233350, 416700, 470700], # JOINT
+        [9375, 37950, 76550, 116675, 208350, 235350],   # SEPARATE
+        [13350, 50800, 131200, 212500, 416700, 444550], # HEAD
+        [18650, 75900, 153100, 233350, 416700, 470700], # WIDOW
     ]
-    SS_MAX = 7347
+    SS_MAX = 7886
 
     def __init__(f, inputs={}):
         super(F1040, f).__init__(inputs)
@@ -74,12 +74,12 @@ class F1040(Form):
             if inputs['status'] == FilingStatus.JOINT:
                 f8606 = [f.addForm(F8606(inputs, 0)),
                          f.addForm(F8606(inputs, 1))]
-                f['15b'] = (f8606[0]['15'] + f8606[0]['18'] + f8606[0]['25'] +
-                            f8606[1]['15'] + f8606[1]['18'] + f8606[1]['25']) \
+                f['15b'] = (f8606[0]['15c'] + f8606[0]['18'] + f8606[0]['25'] +
+                            f8606[1]['15c'] + f8606[1]['18'] + f8606[1]['25']) \
                             or None
             else:
                 f8606 = f.addForm(F8606(inputs, None))
-                f['15b'] = f8606.rowsum(['15', '18', '25'])
+                f['15b'] = f8606.rowsum(['15c', '18', '25'])
 
         f['19'] = inputs.get('unemployment')
         f['22'] = f.rowsum(['7', '8a', '9a', '10', '11', '12', '13',
@@ -187,8 +187,8 @@ class F1040(Form):
             f.comment['78'] = 'Amount you owe'
             f['78'] = f['63'] - f['74']
 
-        f8801_2017 = F8801_2017(inputs, f, f6251, f8801, sd)
-        f.addForm(f8801_2017)
+        #f8801_2018 = F8801_2018(inputs, f, f6251, f8801, sd)
+        #f.addForm(f8801_2018)
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
         w = {}
@@ -225,11 +225,10 @@ class F1040(Form):
         return w
 
     def deduction_for_exemptions(f, status):
-        THRESH = [259400, 311300, 155650, 285350, 311300]
         w = {}
         w['2'] = f.EXEMPTION * f['6d']
         w['3'] = f['38']
-        w['4'] = THRESH[status]
+        w['4'] = F1040sa.LIMITS[status]
         if w['3'] <= w['4']:
             return w['2']
         w['5'] = w['3'] - w['4']
