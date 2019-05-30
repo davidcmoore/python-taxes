@@ -51,10 +51,10 @@ for x in xrange(0, max_income, step):
     fnext = compute_with_income(template, (x + inc) / 2, 0)
     fcapgain = compute_with_income(template, x/2, inc)
 
-    rate         = float(fnext['63'] - fbase['63']) / inc
-    capgain_rate = float(fcapgain['63'] - fbase['63']) / inc
+    rate         = float(fnext['15'] - fbase['15']) / inc
+    capgain_rate = float(fcapgain['15'] - fbase['15']) / inc
 
-    print('%6d %6d %5.3f %5.3f' % (x, fbase['63'], rate, capgain_rate))
+    print('%6d %6d %5.3f %5.3f' % (x, fbase['15'], rate, capgain_rate))
     incomes.append(x)
     rates.append(rate)
     capgain_rates.append(capgain_rate)
