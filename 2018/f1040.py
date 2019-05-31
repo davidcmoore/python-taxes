@@ -149,14 +149,15 @@ class F1040(Form):
 
         f['s49'] = f2441.part2(f)
 
+        f.comment['12a'] = 'Child Tax Credit'
+        f['12a'] = f.child_tax_credit(inputs)
+
         f8801 = F8801(inputs, f, f6251)
         f['s54'] = f8801.get('25')
         f.addForm(f8801)
+
         f.comment['s55'] = 'Nonrefundable credits'
         f['s55'] = f.rowsum(['s48', 's49', 's50', 's51', 's52', 's53', 's54'])
-
-        f.comment['12a'] = 'Child Tax Credit'
-        f['12a'] = f.child_tax_credit(inputs)
 
         f.comment['12'] = 'Total Credits'
         f['12'] = f['12a'] + f['s55']
