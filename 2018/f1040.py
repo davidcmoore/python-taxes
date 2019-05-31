@@ -84,6 +84,7 @@ class F1040(Form):
         else:
             f['s13'] = inputs.get('capital_gain_dist')
 
+        f['s10'] = inputs.get('state_refund_taxable')
         f['s19'] = inputs.get('unemployment')
         f['s22'] = f.rowsum(['s10', 's11', 's12', 's13',
                             's14', 's15b', 's16b', 's17', 's18', 's19', 's20b',
