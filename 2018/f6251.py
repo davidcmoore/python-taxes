@@ -18,11 +18,11 @@ class F6251(Form):
             # TODO: refunds from 1040 schedule 1, line 21
             f['2b'] = -f1040['s10']
 
-        if (f.rowsum(['2' + chr(x) for x in xrange(ord('c'), ord('u'))] + \
+        if (f.rowsum(['2' + chr(x) for x in range(ord('c'), ord('u'))] + \
                      ['3']) or 0) < 0:
             f.must_file = True
 
-        f['4'] = f.rowsum(['2' + chr(x) for x in xrange(ord('a'), ord('u'))] + \
+        f['4'] = f.rowsum(['2' + chr(x) for x in range(ord('a'), ord('u'))] + \
                            ['1', '3'])
         if inputs['status'] == FilingStatus.SEPARATE:
             UPPER = 8 * EXEMPTIONS[inputs['status']] + \
