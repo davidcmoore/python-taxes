@@ -61,6 +61,7 @@ class F1040(Form):
         f['8b'] = inputs.get('tax_exempt_interest')
         f['9a'] = inputs.get('dividends')
         f['9b'] = inputs.get('qualified_dividends')
+        f['10'] = inputs.get('state_refund_taxable')
         f['12'] = f.spouseSum(inputs, 'business_income')
 
         sd = F1040sd(inputs)
