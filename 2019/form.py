@@ -1,5 +1,6 @@
 from __future__ import print_function
 import locale
+import re
 
 class FilingStatus:
     SINGLE=0
@@ -102,31 +103,15 @@ class Form(object):
         Prints all rows of a form, skipping empty rows. The rows are sorted
         sensibly.
         """
-        def keynormalize(a):
-            s = ''
-            numstr = ''
-            out = []
-            for c in a:
-                if c.isdigit():
-                    if s:
-                        out.append(s)
-                        s = ''
-                    numstr += c
-                else:
-                    if numstr:
-                        out.append(int(numstr))
-                        numstr = ''
-                    s += c
-            if s:
-                out.append(s)
-            if numstr:
-                out.append(int(numstr))
-            return out
+        def atoi(s):
+            return int(s) if s.isdigit() else s
+        def mixed_keys(s):
+            return [ atoi(c) for c in re.split('(\d+)', s) ]
 
         locale.setlocale(locale.LC_ALL, '')
         print('%s:' % self.title())
-        keys = self.data.keys()
-        keys.sort(key=keynormalize)
+        keys = list(self.data.keys())
+        keys = sorted(keys, key=mixed_keys)
         for k in keys:
             print('  %5s %11s' % (k, locale.format('%d', self[k], 1)), end='')
             if k in self.comment:
