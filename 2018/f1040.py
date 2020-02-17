@@ -283,7 +283,7 @@ class F1040(Form):
         w['8'] = w['3'] - w['7']
         w['9'] = f['11']
         # TODO: forms 5696, 8910, 8936, schedule R
-        w['10'] = f.rowsum(['s48', 's49', 's50', 's51'])
+        w['10'] = f.rowsum(['s48', 's49', 's50', 's51']) or 0
         if w['9'] == w['10']:
             raise RuntimeError('TODO: additional child tax credit')
             return None

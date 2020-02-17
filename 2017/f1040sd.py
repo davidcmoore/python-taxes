@@ -7,9 +7,11 @@ class F1040sd(Form):
             return
         f.must_file = True
         f['1'] = inputs.get('capital_gain_short')
+        f['6'] = inputs.get('capital_gain_carryover_short')
         f['7'] = f.rowsum(['1', '2', '3', '4', '5', '6'])
         f['8'] = inputs.get('capital_gain_long')
         f['13'] = inputs.get('capital_gain_dist')
+        f['14'] = inputs.get('capital_gain_carryover_long')
         f['15'] = f.rowsum(['8', '9', '10', '11', '12', '13', '14'])
         f['16'] = f.rowsum(['7', '15'])
         if f['16'] < 0:

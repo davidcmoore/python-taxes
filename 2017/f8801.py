@@ -17,7 +17,7 @@ class F8801(Form):
         f['25'] = min(f['21'], f['24'])
         if f['25']:
             f6251.must_file = True
-        f.comment['26'] = 'Credit carryforward to 2017'
+        f.comment['26'] = 'Credit carryforward to 2018'
         f['26'] = f['21'] - f['25']
 
     def title(self):
