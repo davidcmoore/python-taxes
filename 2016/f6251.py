@@ -21,10 +21,10 @@ class F6251(Form):
             # TODO: refunds from 1040, line 21
             f['7'] = -f1040['10']
 
-        if (f.rowsum([str(i) for i in xrange(8,28)]) or 0) < 0:
+        if (f.rowsum([str(i) for i in range(8,28)]) or 0) < 0:
             f.must_file = True
 
-        f['28'] = f.rowsum([str(i) for i in xrange(1,28)])
+        f['28'] = f.rowsum([str(i) for i in range(1,28)])
         if inputs['status'] == FilingStatus.SEPARATE:
             UPPER = 8 * EXEMPTIONS[inputs['status']] + \
                         EXEMPT_LIMITS[inputs['status']]
