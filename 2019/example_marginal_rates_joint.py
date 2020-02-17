@@ -46,7 +46,7 @@ incomes = []
 rates = []
 capgain_rates = []
 
-for x in xrange(0, max_income, step):
+for x in range(0, max_income, step):
     fbase = compute_with_income(template, x/2, 0)
     fnext = compute_with_income(template, (x + inc) / 2, 0)
     fcapgain = compute_with_income(template, x/2, inc)
