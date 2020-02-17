@@ -6,7 +6,7 @@ from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
 from f8801 import F8801
-#from f8801_2019 import F8801_2019
+from f8801_2019 import F8801_2019
 from f8959 import F8959
 from f8960 import F8960
 import copy
@@ -213,8 +213,8 @@ class F1040(Form):
             f.comment['22'] = 'Amount you owe'
             f['22'] = f['15'] - f['18']
 
-        #f8801_2019 = F8801_2019(inputs, f, f6251, f8801, sd)
-        #f.addForm(f8801_2019)
+        f8801_2019 = F8801_2019(inputs, f, f6251, f8801, sd)
+        f.addForm(f8801_2019)
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
         w = {}

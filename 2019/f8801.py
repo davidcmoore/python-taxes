@@ -1,5 +1,4 @@
 from form import Form, FilingStatus
-# NOT FINAL for 2019
 
 class F8801(Form):
     """Form 8801, Credit for Prior Year Minimum Tax"""
@@ -10,16 +9,16 @@ class F8801(Form):
             return
 
         f.must_file = True
-        f['22'] = max(0, f1040['11a'] + f1040['s46'] - \
-            (f1040.rowsum(['12a', 's48', 's49', 's50', 's51', 's53', 's54']) or 0))
+        f['22'] = max(0, f1040['12a'] + f1040['s2_2'] - \
+            (f1040.rowsum(['13a', 's3_1', 's3_2', 's3_3', 's3_4', 's3_5', 's3_6']) or 0))
         f['23'] = f6251.get('9')
         f['24'] = max(0, f['22'] - f['23'])
         f.comment['25'] = 'Minimum tax credit'
         f['25'] = min(f['21'], f['24'])
         if f['25']:
             f6251.must_file = True
-        f.comment['26'] = 'Credit carryforward to 2019'
+        f.comment['26'] = 'Credit carryforward to 2020'
         f['26'] = f['21'] - f['25']
 
     def title(self):
-        return 'Form 8801 (for 2018 filing)'
+        return 'Form 8801 (for 2019 filing)'
