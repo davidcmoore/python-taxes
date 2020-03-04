@@ -1,7 +1,5 @@
 from form import Form, FilingStatus
 
-# NOT FINAL
-
 class F8960(Form):
     """Form 8960, Net Investment Income Tax"""
     THRESHOLDS = [200000, 250000, 125000, 200000, 250000]

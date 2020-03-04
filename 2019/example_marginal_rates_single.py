@@ -12,6 +12,7 @@
 
 import copy
 from f1040 import F1040
+from f1040sse import SS_WAGE_LIMIT
 from form import FilingStatus
 import matplotlib.pyplot as plt
 
@@ -21,7 +22,6 @@ template = {
     'disable_rounding': True,
 }
 
-SOCIAL_SECURITY_MAX = 117000
 MEDICARE_RATE = .0145
 
 def compute_with_income(template, income, capital_gains):
@@ -29,7 +29,7 @@ def compute_with_income(template, income, capital_gains):
     inputs['wages']          = income
     inputs['wages_medicare'] = income
     inputs['medicare_withheld'] = income * MEDICARE_RATE
-    inputs['wages_ss'] = min(SOCIAL_SECURITY_MAX, income)
+    inputs['wages_ss'] = min(SS_WAGE_LIMIT, income)
     inputs['state_withholding'] = (income + capital_gains) * .09
     inputs['capital_gain_long'] = capital_gains
     return F1040(inputs)
@@ -48,10 +48,10 @@ for x in range(0, max_income, step):
     fnext = compute_with_income(template, x + inc, 0)
     fcapgain = compute_with_income(template, x, inc)
 
-    rate         = float(fnext['15'] - fbase['15']) / inc
-    capgain_rate = float(fcapgain['15'] - fbase['15']) / inc
+    rate         = float(fnext['16'] - fbase['16']) / inc
+    capgain_rate = float(fcapgain['16'] - fbase['16']) / inc
 
-    print('%6d %6d %5.3f %5.3f' % (x, fbase['15'], rate, capgain_rate))
+    print('%6d %6d %5.3f %5.3f' % (x, fbase['16'], rate, capgain_rate))
     incomes.append(x)
     rates.append(rate)
     capgain_rates.append(capgain_rate)

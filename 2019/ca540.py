@@ -5,17 +5,17 @@ from ca540sp import CA540sp
 import math
 
 class CA540(Form):
-    EXEMPTION = 118
-    DEPENDENT_EXEMPTION = 367
+    EXEMPTION = 122
+    DEPENDENT_EXEMPTION = 378
     BRACKET_RATES = [.01, .02, .04, .06, .08, .093, .103, .113, .123]
     BRACKET_LIMITS = [
-        [8544, 20255, 31969, 44377, 56085, 286492, 343788, 572980],   # SINGLE
-        [17088, 40510, 63938, 88754, 112170, 572984, 687576, 1145960],# JOINT
-        [8544, 20255, 31969, 44377, 56085, 286492, 343788, 572980],   # SEPARATE
-        [17099, 40512, 52224, 64632, 76343, 389627, 467553, 779253],  # HEAD
-        [17088, 40510, 63938, 88754, 112170, 572984, 687576, 1145960],# WIDOW
+        [8809, 20883, 32960, 45753, 57824, 295373, 354445, 590742],   # SINGLE
+        [17618, 41766, 65290, 91506, 115648, 590746, 708890, 1181484],# JOINT
+        [8809, 20883, 32960, 45753, 57824, 295373, 354445, 590742],   # SEPARATE
+        [17629, 41768, 53843, 66636, 78710, 401705, 482047, 803410],  # HEAD
+        [17618, 41766, 65290, 91506, 115648, 590746, 708890, 1181484],# WIDOW
     ]
-    SDI_MAX = 1149.67
+    SDI_MAX = 1183.71
     MENTAL_HEALTH_LIMIT = 1000000
     MENTAL_HEALTH_RATE = .01
 
@@ -42,12 +42,12 @@ class CA540(Form):
         f.comment['13'] = 'Federal AGI'
         f['13'] = f1040['8b']
         sca = f.addForm(CA540sca(inputs, f1040, f1040sa))
-        f['14'] = sca['B37']
+        f['14'] = sca['1C_B23']
         f['15'] = f['13'] - f['14']
-        f['16'] = sca['C37']
+        f['16'] = sca['1C_C23']
         f.comment['17'] = 'CA AGI'
         f['17'] = f['15'] + f['16']
-        f['18'] = sca['II30']
+        f['18'] = sca['2_30']
         f.comment['19'] = 'Taxable income'
         f['19'] = max(0, f['17'] - f['18'])
 
@@ -81,13 +81,13 @@ class CA540(Form):
             else:
                 if inputs['ca_sdi_withheld'] > f.SDI_MAX:
                     f['74'] = inputs['ca_sdi_withheld'] - f.SDI_MAX
-        f.comment['76'] = 'Total payments'
-        f['76'] = f.rowsum(['71', '72', '73', '74', '75'])
+        f.comment['77'] = 'Total payments'
+        f['77'] = f.rowsum(['71', '72', '73', '74', '75', '76'])
 
-        if f['76'] > f['91']:
-            f['92'] = f['76'] - f['91']
+        if f['77'] > f['91']:
+            f['92'] = f['77'] - f['91']
         else:
-            f['93'] = f['91'] - f['76']
+            f['93'] = f['91'] - f['77']
 
         if f['92'] > f['64']:
             f.comment['94'] = 'Refund'
@@ -113,7 +113,7 @@ class CA540(Form):
         return tax
 
     def agi_limitation_worksheet(f, status):
-        LIMITS = [194504, 389013, 194504, 291760, 389013]
+        LIMITS = [200534, 401072, 200534, 300805, 401072]
         w = {}
         w['a'] = f['13']
         w['b'] = LIMITS[status]
