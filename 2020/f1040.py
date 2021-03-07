@@ -6,9 +6,10 @@ from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
 from f8801 import F8801
-from f8801_2020 import F8801_2020
+#from f8801_2021 import F8801_2021
 from f8959 import F8959
 from f8960 import F8960
+from f8995a import F8995A
 import copy
 import math
 import pprint
@@ -22,18 +23,18 @@ import pprint
 #   tax_exempt_interest (optional)
 
 class F1040(Form):
-    STD_DED = [12200, 24400, 12200, 18350, 24400]
+    STD_DED = [12400, 24800, 12400, 18650, 24800]
     BRACKET_RATES = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37]
     BRACKET_LIMITS = [
-        [9700, 39475, 84200, 160725, 204100, 510300],   # SINGLE
-        [19400, 78950, 168400, 321450, 408200, 612350], # JOINT
-        [9700, 39475, 84200, 160725, 204100, 306175],   # SEPARATE
-        [13850, 52850, 84200, 160700, 204100, 510300],  # HEAD
-        [19400, 78950, 168400, 321450, 408200, 612350], # WIDOW
+        [9875, 40125, 85525, 163300, 207350, 518400],   # SINGLE
+        [19750, 80250, 171050, 326600, 414700, 622050], # JOINT
+        [9875, 40125, 85525, 163300, 207350, 311025],   # SEPARATE
+        [14100, 53700, 85500, 163300, 207350, 518400],  # HEAD
+        [19750, 80250, 171050, 326600, 414700, 622050], # WIDOW
     ]
-    CAPGAIN15_LIMITS = [39375, 78750, 39375, 52750, 78750]
-    CAPGAIN20_LIMITS = [434550, 488850, 244425, 461700, 488850]
-    SS_MAX = 8239.80
+    CAPGAIN15_LIMITS = [40000, 80000, 40000, 53600, 80000]
+    CAPGAIN20_LIMITS = [441450, 496600, 248300, 469050, 496600]
+    SS_MAX = 8537.40
 
     def __init__(f, inputs={}):
         super(F1040, f).__init__(inputs)
@@ -77,13 +78,13 @@ class F1040(Form):
                 f8606 = f.addForm(F8606(inputs, None))
                 f['4b'] = f8606.rowsum(['15c', '18', '25c'])
 
-        f.comment['6'] = 'Capital Gains'
+        f.comment['7'] = 'Capital Gains'
         sd = F1040sd(inputs)
         f.addForm(sd)
         if sd.mustFile():
-            f['6'] = sd['21'] or sd['16']
+            f['7'] = sd['21'] or sd['16']
         else:
-            f['6'] = inputs.get('capital_gain_dist')
+            f['7'] = inputs.get('capital_gain_dist')
 
         f['s1_1'] = inputs.get('state_refund_taxable')
         f['s1_3'] = f.spouseSum(inputs, 'business_income')
@@ -91,26 +92,26 @@ class F1040(Form):
 
         f['s1_9'] = f.rowsum(['s1_1', 's1_2a', 's1_3', 's1_4',
                               's1_5', 's1_6', 's1_7', 's1_8'])
-        f['7a'] = f.get('s1_9')
+        f['8'] = f.get('s1_9')
 
-        f.comment['7b'] = 'Total Income'
-        f['7b'] = f.rowsum(['1', '2b', '3b', '4b', '4d', '5b', '6', '7a'])
+        f.comment['9'] = 'Total Income'
+        f['9'] = f.rowsum(['1', '2b', '3b', '4b', '5b', '6b', '7', '8'])
 
         if inputs['status'] == FilingStatus.JOINT:
             if sse[0].mustFile() or sse[1].mustFile():
-                f['s1_14'] = ((sse[0]['A6'] or sse[0]['B13'] or 0) +
-                              (sse[1]['A6'] or sse[1]['B13'] or 0))
+                f['s1_14'] = (sse[0]['13'] or 0) + (sse[1]['13'] or 0)
         else:
             if sse.mustFile():
-                f['s1_14'] = sse['A6'] or sse['B13']
+                f['s1_14'] = sse['13']
 
         f['s1_22'] = f.rowsum(['s1_10', 's1_11', 's1_12', 's1_13', 's1_14',
                                's1_15', 's1_16', 's1_17', 's1_18a', 's1_19',
                                's1_20', 's1_21'])
-        f['8a'] = f.get('s1_22')
+        f['10a'] = f.get('s1_22')
+        f['10c'] = f.rowsum(['10a', '10b'])
 
-        f.comment['8b'] = 'AGI'
-        f['8b'] = f['7b'] - f['8a']
+        f.comment['11'] = 'AGI'
+        f['11'] = f['9'] - f['10c']
 
         sa = F1040sa(inputs, f)
         std = f.STD_DED[inputs['status']]
@@ -121,24 +122,28 @@ class F1040(Form):
 
         f.addForm(sa)
         if sa.mustFile():
-            f.comment['9'] = 'Itemized deductions'
-            f['9'] = sa['17']
+            f.comment['12'] = 'Itemized deductions'
+            f['12'] = sa['17']
         else:
             # TODO: claimed as dependent or born before Jan 2, 1955 or blind
-            f.comment['9'] = 'Standard deduction'
-            f['9'] = std
+            f.comment['12'] = 'Standard deduction'
+            f['12'] = std
+
+        f8995a = f.addForm(F8995A(inputs, f, sd))
+        if f8995a.mustFile():
+            f['13'] = f8995a['39']
 
         # TODO: Qualified Business Income Deduction, form 8995
-        f['11a'] = f['9'] + f['10']
+        f['14'] = f['12'] + f['13']
 
-        f.comment['11b'] = 'Taxable Income'
-        f['11b'] = max(0, f['8b'] - f['11a'])
+        f.comment['15'] = 'Taxable Income'
+        f['15'] = max(0, f['11'] - f['14'])
 
         # TODO: Schedule D tax worksheet
         assert(not sd['18'] and not sd['19'])
 
-        f.comment['12a'] = 'Regular Tax'
-        f['12a'] = f.div_cap_gain_tax_worksheet(inputs, sd)['27']
+        f.comment['16'] = 'Regular Tax'
+        f['16'] = f.div_cap_gain_tax_worksheet(inputs, sd)['25']
 
         # Compute line s3_1 now because it's needed by AMT
         f.comment['s3_1'] = 'Foreign Tax Paid'
@@ -154,11 +159,12 @@ class F1040(Form):
 
         f['s2_3'] = f.rowsum(['s2_1', 's2_2'])
 
-        f.comment['12b'] = 'Tax'
-        f['12b'] = f['12a'] + f['s2_3']
+        f['17'] = f['s2_3']
 
-        f.comment['13a'] = 'Child Tax Credit'
-        f['13a'] = f.child_tax_credit(inputs)
+        f['18'] = f['16'] + f['17']
+
+        f.comment['19'] = 'Child Tax Credit'
+        f['19'] = f.child_tax_credit(inputs)
 
         f.comment['s3_2'] = 'Credit for child care expenses'
         f['s3_2'] = f2441.part2(f)
@@ -167,21 +173,22 @@ class F1040(Form):
         f['s3_6'] = f8801.get('25')
         f.addForm(f8801)
 
-        f.comment['s3_7'] = 'Nonrefundable credits'
         f['s3_7'] = f.rowsum(['s3_1', 's3_2', 's3_3', 's3_4', 's3_5', 's3_6'])
 
-        f.comment['13b'] = 'Total Credits'
-        f['13b'] = f['13a'] + f['s3_7']
+        f.comment['20'] = 'Nonrefundable credits'
+        f['20'] = f['s3_7']
 
-        f['14'] = max(0, f['12b'] - f['13b'])
+        f.comment['21'] = 'Total Credits'
+        f['21'] = f['19'] + f['20']
+
+        f['22'] = max(0, f['18'] - f['21'])
 
         if inputs['status'] == FilingStatus.JOINT:
             if sse[0].mustFile() or sse[1].mustFile():
-                f['s2_4'] = ((sse[0]['A5'] or sse[0]['B12'] or 0) +
-                             (sse[1]['A5'] or sse[1]['B12'] or 0))
+                f['s2_4'] = (sse[0]['12'] or 0) + (sse[1]['12'] or 0)
         else:
             if sse.mustFile():
-                f['s2_4'] = sse['A5'] or sse['B12']
+                f['s2_4'] = sse['12']
 
         f.comment['s2_8'] = 'NIIT and Additional Medicare Tax'
         f8959 = F8959(inputs, sse)
@@ -192,80 +199,82 @@ class F1040(Form):
         f['s2_10'] = f.rowsum(['s2_4', 's2_5', 's2_6', 's2_7a', 's2_7b',
                                's2_8'])
 
-        f.comment['15'] = 'Other Taxes'
-        f['15'] = f['s2_10']
+        f.comment['23'] = 'Other Taxes'
+        f['23'] = f['s2_10']
 
-        f.comment['16'] = 'Total Tax'
-        f['16'] = f.rowsum(['14', '15'])
+        f.comment['24'] = 'Total Tax'
+        f['24'] = f.rowsum(['22', '23'])
 
-        f.comment['17'] = 'Withholding'
-        f['17'] = inputs.get('withholding', 0) + f8959['24']
+        f['25a'] = inputs.get('withholding', 0)
+        f['25c'] = f8959['24']
 
-        f['s3_8'] = inputs.get('estimated_payments')
+        f.comment['25d'] = 'Withholding'
+        f['25d'] = f.rowsum(['25a', '25b', '25c'])
 
-        # TODO: EIC, Additional Child Tax Credit
+        f['26'] = inputs.get('estimated_payments')
+
+        # TODO: EIC, Additional Child Tax Credit, Recovery Rebate Credit
 
         if inputs.get('ss_withheld'):
             if inputs['status'] == FilingStatus.JOINT:
                 if inputs['ss_withheld'][0] > f.SS_MAX:
-                    f['s3_11'] = inputs['ss_withheld'][0] - f.SS_MAX
+                    f['s3_10'] = inputs['ss_withheld'][0] - f.SS_MAX
                 if inputs['ss_withheld'][1] > f.SS_MAX:
-                    f['s3_11'] += inputs['ss_withheld'][1] - f.SS_MAX
+                    f['s3_10'] += inputs['ss_withheld'][1] - f.SS_MAX
             else:
                 if inputs['ss_withheld'] > f.SS_MAX:
-                    f['s3_11'] = inputs['ss_withheld'] - f.SS_MAX
+                    f['s3_10'] = inputs['ss_withheld'] - f.SS_MAX
 
-        f['s3_14'] = f.rowsum(['s3_8', 's3_9', 's3_10', 's3_11', 's3_12',
-                               's3_13'])
-        f['18d'] = f['s3_14']
+        f['s3_12f'] = f.rowsum(['s3_12a', 's3_12b', 's3_12c', 's3_12d',
+                                's3_12e'])
+        f['s3_13'] = f.rowsum(['s3_8', 's3_9', 's3_10', 's3_11', 's3_12f'])
+        f['31'] = f['s3_13']
 
-        f.comment['18e'] = 'Refundable Credits'
-        f['18e'] = f.rowsum(['18a', '18b', '18c', '18d'])
+        f.comment['32'] = 'Refundable Credits'
+        f['32'] = f.rowsum(['27', '28', '29', '30', '31'])
 
-        f.comment['19'] = 'Total payments'
-        f['19'] = f.rowsum(['17', '18e'])
-        if f['19'] > f['16']:
-            f.comment['20'] = 'Refund'
-            f['20'] = f['19'] - f['16']
+        f.comment['33'] = 'Total payments'
+        f['33'] = f.rowsum(['25d', '26', '32'])
+        if f['33'] > f['24']:
+            f.comment['34'] = 'Refund'
+            f['34'] = f['33'] - f['24']
         else:
-            f.comment['23'] = 'Amount you owe'
-            f['23'] = f['16'] - f['19']
+            f.comment['37'] = 'Amount you owe'
+            f['37'] = f['24'] - f['33']
 
-        f8801_2020 = F8801_2020(inputs, f, f6251, f8801, sd)
-        f.addForm(f8801_2020)
+        #f8801_2021 = F8801_2021(inputs, f, f6251, f8801, sd)
+        #f.addForm(f8801_2021)
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
         w = {}
-        w['1'] = f['11b']
+        w['1'] = f['15']
         w['2'] = f['3a']
         if sched_d.mustFile():
             w['3'] = max(0, min(sched_d['15'], sched_d['16']))
         else:
-            w['3'] = f['6']
+            w['3'] = f['7']
         w['4'] = w['2'] + w['3']
-        w['5'] = 0 # TODO: form 4952
-        w['6'] = max(0, w['4'] - w['5'])
-        w['7'] = max(0, w['1'] - w['6'])
-        w['8'] = f.CAPGAIN15_LIMITS[inputs['status']]
-        w['9'] = min(w['1'], w['8'])
-        w['10'] = min(w['7'], w['9'])
-        w['11'] = w['9'] - w['10']
-        w['12'] = min(w['1'], w['6'])
-        w['13'] = w['11']
-        w['14'] = w['12'] - w['13']
-        w['15'] = f.CAPGAIN20_LIMITS[inputs['status']]
-        w['16'] = min(w['1'], w['15'])
-        w['17'] = w['7'] + w['11']
-        w['18'] = max(0, w['16'] - w['17'])
-        w['19'] = min(w['14'], w['18'])
-        w['20'] = w['19'] * .15
-        w['21'] = w['11'] + w['19']
-        w['22'] = w['12'] - w['21']
-        w['23'] = w['22'] * .20
-        w['24'] = f.tax_worksheet(inputs['status'], w['7'])
-        w['25'] = w['20'] + w['23'] + w['24']
-        w['26'] = f.tax_worksheet(inputs['status'], w['1'])
-        w['27'] = min(w['25'], w['26'])
+        w['5'] = max(0, w['1'] - w['4'])
+        w['6'] = f.CAPGAIN15_LIMITS[inputs['status']]
+        w['7'] = min(w['1'], w['6'])
+        w['8'] = min(w['5'], w['7'])
+        w['9'] = w['7'] - w['8']
+        w['10'] = min(w['1'], w['4'])
+        w['11'] = w['9']
+        w['12'] = w['10'] - w['11']
+        w['13'] = f.CAPGAIN20_LIMITS[inputs['status']]
+        w['14'] = min(w['1'], w['13'])
+        w['15'] = w['5'] + w['9']
+        w['16'] = max(0, w['14'] - w['15'])
+        w['17'] = min(w['12'], w['16'])
+        w['18'] = w['17'] * .15
+        w['19'] = w['9'] + w['17']
+        w['20'] = w['10'] - w['19']
+        w['21'] = w['20'] * .20
+        w['22'] = f.tax_worksheet(inputs['status'], w['5'])
+        w['23'] = w['18'] + w['21'] + w['22']
+        w['24'] = f.tax_worksheet(inputs['status'], w['1'])
+        w['25'] = min(w['23'], w['24'])
         return w
 
     def tax_worksheet(f, status, val):
@@ -289,7 +298,7 @@ class F1040(Form):
         w['1'] = inputs['qualifying_children'] * 2000
         w['2'] = 0 # TODO: other dependents
         w['3'] = w['1'] + w['2']
-        w['4'] = f['8b']
+        w['4'] = f['11']
         if inputs['status'] == FilingStatus.JOINT:
             w['5'] = 400000
         else:
@@ -299,7 +308,7 @@ class F1040(Form):
         if w['3'] <= w['7']:
             return 0
         w['8'] = w['3'] - w['7']
-        w['9'] = f['12b']
+        w['9'] = f['18']
         # TODO: forms 5696, 8910, 8936, schedule R
         w['10'] = f.rowsum(['s3_1' 's3_2', 's3_3', 's3_4']) or 0
         if w['9'] == w['10']:
