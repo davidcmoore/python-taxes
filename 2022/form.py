@@ -74,7 +74,7 @@ class Form(object):
         """
         return self.must_file
 
-    def rowsum(self, rows):
+    def rowsum(self, rows, patterns=[]):
         """
         Convenience function for summing a list of rows in the form by
         name. If all named rows are blank, returns None.
@@ -85,6 +85,11 @@ class Form(object):
             if r in self:
                 isNone = False
                 val += self[r]
+
+        for p in patterns:
+            pat = re.compile(p)
+            val += sum(v for k, v in self.data.items() if pat.match(k))
+
         return None if isNone else val
 
     def spouseSum(self, inputs, field):
