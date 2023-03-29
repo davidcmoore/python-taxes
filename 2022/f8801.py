@@ -20,8 +20,8 @@ class F8801(Form):
         f['25'] = min(f['21'], f['24'])
         if f['25']:
             f6251.must_file = True
-        f.comment['26'] = 'Credit carryforward to 2022'
+        f.comment['26'] = 'Credit carryforward to 2023'
         f['26'] = f['21'] - f['25']
 
     def title(self):
-        return 'Form 8801 (for 2021 filing)'
+        return 'Form 8801 (for 2022 filing)'
