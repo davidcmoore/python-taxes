@@ -77,15 +77,14 @@ class Form(object):
     def rowsum(self, rows):
         """
         Convenience function for summing a list of rows in the form by
-        name. If all named rows are blank, returns None.
+        regex pattern. If all named rows are blank, returns None.
         """
-        val = 0
-        isNone = True
-        for r in rows:
-            if r in self:
-                isNone = False
-                val += self[r]
-        return None if isNone else val
+        raw_pattern = '(' + '|'.join(rows) + ')'
+        pattern = re.compile(raw_pattern)
+        val = sum(v for k, v in self.data.items() if pattern.fullmatch(k))
+        if any(pattern.fullmatch(k) for k, v in self.data.items()):
+            return val
+        return None
 
     def spouseSum(self, inputs, field):
         """
