@@ -12,8 +12,8 @@ class CA540sca(Form):
         f['1B_B7'] = f1040.get('s1_7')
         f['1B_B9a'] = f.rowsum(['1B_B8[a-z]'])
         f['1B_C9a'] = f.rowsum(['1B_C8[a-z]'])
-        f['1B_B10'] = f.rowsum(['1A_B1z', '1A_B[2-6]b', '1A_B7', '1B_B[1-7]', '1B_B9a', '1B_B9b[1-3]'])
-        f['1B_C10'] = f.rowsum(['1A_C1z', '1A_C[2-5]b', '1A_C7', '1B_C2a', '1B_C[1-6]', '1B_C9a'])
+        f['1B_B10'] = f.rowsum(['1(A_B(1z|[2-7][a-z]*)|B_B([1-7][a-z]*|9a|9b[1-3]))'])
+        f['1B_C10'] = f.rowsum(['1(A_C(1z|[2-7][a-z]*)|B_C([1-7][a-z]*|9a))'])
 
         f['1C_B11'] = f1040.get('s1_11')
         f['1C_B13'] = f1040.get('s1_13')
