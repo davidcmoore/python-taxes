@@ -7,8 +7,7 @@ Licensed under the GNU GPL v2.0. Please contact me if you are planning to
 use or redistribute this code for any serious purpose.
 
 Disclaimer: This code comes with no warranty. It will probably not work
-for your tax return or specific circumstances without modification. If you
-rely on this, you will probably be audited by the IRS. I am not a tax
-accountant.
+for your tax return or specific circumstances without modification. I am
+not a tax accountant and this is not tax advice.
 
-See example_*.py files in each year's subdirectory.
+See example_*.py files in each year's subdirectory for usage instructions.

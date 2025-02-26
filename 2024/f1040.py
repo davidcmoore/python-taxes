@@ -6,7 +6,7 @@ from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
 from f8801 import F8801
-from f8801_2024 import F8801_2024
+#from f8801_2025 import F8801_2025
 from f8812 import F8812
 from f8959 import F8959
 from f8960 import F8960
@@ -24,18 +24,18 @@ import pprint
 #   tax_exempt_interest (optional)
 
 class F1040(Form):
-    STD_DED = [13850, 27700, 13850, 20800, 27700]
+    STD_DED = [14600, 29200, 14600, 21900, 29200]
     BRACKET_RATES = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37]
     BRACKET_LIMITS = [
-        [11000, 44725, 95375, 182100, 231250, 578125],  # SINGLE
-        [22000, 89450, 190750, 364200, 462500, 693750], # JOINT
-        [11000, 44725, 95375, 182100, 231250, 346875],  # SEPARATE
-        [15700, 59850, 95350, 182100, 231250, 578100],  # HEAD
-        [22000, 89450, 190750, 364200, 462500, 693750], # WIDOW
+        [11600, 47150, 100525, 191950, 243725, 609350], # SINGLE
+        [23200, 94300, 201050, 383900, 487450, 731200], # JOINT
+        [11600, 47150, 100525, 191950, 243725, 365600], # SEPARATE
+        [16550, 63100, 100500, 191950, 243700, 609350], # HEAD
+        [23200, 94300, 201050, 383900, 487450, 731200], # WIDOW
     ]
-    CAPGAIN15_LIMITS = [44625, 89250, 44625, 59750, 89250]
-    CAPGAIN20_LIMITS = [492300, 553850, 276900, 523050, 553850]
-    SS_MAX = 9932.40
+    CAPGAIN15_LIMITS = [47025, 94050, 47025, 63000, 94050]
+    CAPGAIN20_LIMITS = [518900, 583750, 291850, 551350, 583750]
+    SS_MAX = 10453.20
 
     def __init__(f, inputs={}):
         super(F1040, f).__init__(inputs)
@@ -63,9 +63,11 @@ class F1040(Form):
         f['1a'] = f.spouseSum(inputs, 'wages')
         f['1e'] = f2441.get('26')
         f['1z'] = f.rowsum(['1a', '1b', '1c', '1d', '1e', '1f', '1g', '1h'])
+        f.comment['2a'] = 'Tax-exempt Interest'
         f['2a'] = inputs.get('tax_exempt_interest')
         f.comment['2b'] = 'Taxable Interest'
         f['2b'] = inputs.get('taxable_interest')
+        f.comment['3a'] = 'Qualified Dividends'
         f['3a'] = inputs.get('qualified_dividends')
         f.comment['3b'] = 'Dividends'
         f['3b'] = inputs.get('dividends')
@@ -95,6 +97,7 @@ class F1040(Form):
         f['s1_9'] = f.rowsum(['s1_8[a-z]'])
 
         f['s1_10'] = f.rowsum(['s1_1', 's1_2a', 's1_[3-7]', 's1_9'])
+        f.comment['8'] = 'Additional Income'
         f['8'] = f.get('s1_10')
 
         f.comment['9'] = 'Total Income'
@@ -126,7 +129,7 @@ class F1040(Form):
             f.comment['12'] = 'Itemized deductions'
             f['12'] = sa['17']
         else:
-            # TODO: claimed as dependent or born before Jan 2, 1959 or blind
+            # TODO: claimed as dependent or born before Jan 2, 1960 or blind
             f.comment['12'] = 'Standard deduction'
             f['12'] = std
 
@@ -145,6 +148,8 @@ class F1040(Form):
         f.comment['16'] = 'Regular Tax'
         f['16'] = f.div_cap_gain_tax_worksheet(inputs, sd)['25']
 
+        f['s2_1z'] = f.rowsum(['s2_1[a-y]'])
+
         # Compute line s3_1 now because it's needed by AMT
         f.comment['s3_1'] = 'Foreign Tax Paid'
         foreign_tax = inputs.get('foreign_tax', 0)
@@ -156,11 +161,11 @@ class F1040(Form):
         # If you have a different basis in AMT for some Schedule D items, that
         # copy should be different.
         f6251 = F6251(inputs, f, sa if sa.mustFile() else None, sd, sd)
-        f.comment['s2_1'] = 'AMT'
-        f['s2_1'] = f6251.get('11')
+        f.comment['s2_2'] = 'AMT'
+        f['s2_2'] = f6251.get('11')
         f.addForm(f6251)
 
-        f['s2_3'] = f.rowsum(['s2_1', 's2_2'])
+        f['s2_3'] = f.rowsum(['s2_1z', 's2_2'])
 
         f['17'] = f['s2_3']
 
@@ -207,7 +212,7 @@ class F1040(Form):
         f.addForm(f8959)
         f.addForm(f8960)
         f['s2_18'] = f.rowsum(['s2_17[a-z]'])
-        f['s2_21'] = f.rowsum(['s2_4', 's2_[7-9]', 's2_1[0-6]', 's2_18'])
+        f['s2_21'] = f.rowsum(['s2_4', 's2_[7-9]', 's2_1[0-6]', 's2_1[8-9]'])
 
         f.comment['23'] = 'Other Taxes'
         f['23'] = f['s2_21']
@@ -253,8 +258,8 @@ class F1040(Form):
             f.comment['37'] = 'Amount you owe'
             f['37'] = f['24'] - f['33']
 
-        f8801_2024 = F8801_2024(inputs, f, f6251, f8801, sd)
-        f.addForm(f8801_2024)
+        #f8801_2025 = F8801_2025(inputs, f, f6251, f8801, sd)
+        #f.addForm(f8801_2025)
 
     def div_cap_gain_tax_worksheet(f, inputs, sched_d):
         w = {}
