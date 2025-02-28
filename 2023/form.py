@@ -112,7 +112,7 @@ class Form(object):
         keys = list(self.data.keys())
         keys = sorted(keys, key=mixed_keys)
         for k in keys:
-            print('  %6s %11s' % (k, locale.format('%d', self[k], 1)), end='')
+            print('  %6s %11s' % (k, locale.format_string('%d', self[k], grouping=True)), end='')
             if k in self.comment:
                 print('  %s' % self.comment[k], end='')
             print('')
