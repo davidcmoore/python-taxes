@@ -105,14 +105,14 @@ class Form(object):
         def atoi(s):
             return int(s) if s.isdigit() else s
         def mixed_keys(s):
-            return [ atoi(c) for c in re.split('(\d+)', s) ]
+            return [ atoi(c) for c in re.split(r'(\d+)', s) ]
 
         locale.setlocale(locale.LC_ALL, '')
         print('%s:' % self.title())
         keys = list(self.data.keys())
         keys = sorted(keys, key=mixed_keys)
         for k in keys:
-            print('  %6s %11s' % (k, locale.format('%d', self[k], 1)), end='')
+            print('  %6s %11s' % (k, locale.format_string('%d', self[k], grouping=True)), end='')
             if k in self.comment:
                 print('  %s' % self.comment[k], end='')
             print('')
