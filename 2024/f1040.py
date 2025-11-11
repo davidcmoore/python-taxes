@@ -2,6 +2,7 @@ from form import Form, FilingStatus
 from f1040sse import F1040sse
 from f1040sa import F1040sa
 from f1040sd import F1040sd
+from f1116 import F1116
 from f2441 import F2441
 from f6251 import F6251
 from f8606 import F8606
@@ -25,6 +26,7 @@ import pprint
 
 class F1040(Form):
     STD_DED = [14600, 29200, 14600, 21900, 29200]
+    AGE_BLIND = [1950, 1550, 1550, 1950, 1550]
     BRACKET_RATES = [0.10, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37]
     BRACKET_LIMITS = [
         [11600, 47150, 100525, 191950, 243725, 609350], # SINGLE
@@ -100,9 +102,6 @@ class F1040(Form):
         f.comment['8'] = 'Additional Income'
         f['8'] = f.get('s1_10')
 
-        f.comment['9'] = 'Total Income'
-        f['9'] = f.rowsum(['1z', '2b', '3b', '4b', '5b', '6b', '7', '8'])
-
         if inputs['status'] == FilingStatus.JOINT:
             if sse[0].mustFile() or sse[1].mustFile():
                 f['s1_15'] = (sse[0]['13'] or 0) + (sse[1]['13'] or 0)
@@ -112,13 +111,21 @@ class F1040(Form):
 
         f['s1_25'] = f.rowsum(['s1_24[a-z]'])
         f['s1_26'] = f.rowsum(['s1_1[1-8]', 's1_19a', 's1_2[0-3]', 's1_25'])
+
+        f.comment['6b'] = 'Taxable Social Security Benefits'
+        # This line requires all of Schedule 1 and 1040 up to line 8
+        f['6b'] = f.social_security_taxable(inputs)
+
+        f.comment['9'] = 'Total Income'
+        f['9'] = f.rowsum(['1z', '2b', '3b', '4b', '5b', '6b', '7', '8'])
         f['10'] = f.get('s1_26')
 
         f.comment['11'] = 'AGI'
         f['11'] = f['9'] - f['10']
 
         sa = F1040sa(inputs, f)
-        std = f.STD_DED[inputs['status']]
+        std = f.STD_DED[inputs['status']] + \
+              inputs.get('age_blind_boxes', 0) * f.AGE_BLIND[inputs['status']]
         if 'itemize_deductions' in inputs:
             sa.must_file = inputs['itemize_deductions']
         else:
@@ -129,7 +136,7 @@ class F1040(Form):
             f.comment['12'] = 'Itemized deductions'
             f['12'] = sa['17']
         else:
-            # TODO: claimed as dependent or born before Jan 2, 1960 or blind
+            # TODO: claimed as dependent
             f.comment['12'] = 'Standard deduction'
             f['12'] = std
 
@@ -151,11 +158,16 @@ class F1040(Form):
         f['s2_1z'] = f.rowsum(['s2_1[a-y]'])
 
         # Compute line s3_1 now because it's needed by AMT
-        f.comment['s3_1'] = 'Foreign Tax Paid'
+        f.comment['s3_1'] = 'Foreign Tax Credit'
         foreign_tax = inputs.get('foreign_tax', 0)
-        assert(foreign_tax < 300 or (foreign_tax < 600 and inputs['status'] == FilingStatus.JOINT))
         if foreign_tax:
-            f['s3_1'] = foreign_tax
+            if ((foreign_tax < 300 or (foreign_tax < 600 and inputs['status'] == FilingStatus.JOINT)) \
+                  and (inputs.get('foreign_tax_carryover', 0) == 0)):
+                f['s3_1'] = foreign_tax
+            else:
+                f1116 = F1116(inputs, f, sa, sd)
+                f.addForm(f1116)
+                f['s3_1'] = f1116['35']
 
         # TODO: The second instance of sd passed to F6251 is refigured for AMT.
         # If you have a different basis in AMT for some Schedule D items, that
@@ -306,6 +318,35 @@ class F1040(Form):
             i += 1
         tax += f.BRACKET_RATES[i] * (val - prev)
         return tax
+
+    def social_security_taxable(f, inputs):
+        w = {}
+        if not f['6a']:
+            return None
+        w['1'] = f['6a']
+        w['2'] = w['1'] * 0.5
+        w['3'] = f.rowsum(['1z', '[2-5]b', '7', '8']) or 0
+        w['4'] = f['2a']
+        w['5'] = w['2'] + w['3'] + w['4']
+        w['6'] = f.rowsum(['s1_1[1-9]', 's1_2[035]']) or 0
+        w['7'] = w['5'] - w['6']
+        if w['7'] < 0:
+            return 0
+        w['8'] = 32000 if (inputs['status'] == FilingStatus.JOINT) else 25000
+        assert(inputs['status'] != FilingStatus.SEPARATE)
+        w['9'] = w['7'] - w['8']
+        if w['9'] < 0:
+            return 0
+        w['10'] = 12000 if (inputs['status'] == FilingStatus.JOINT) else 9000
+        w['11'] = max(0, w['9'] - w['10'])
+        w['12'] = min(w['9'], w['10'])
+        w['13'] = w['12'] / 2
+        w['14'] = min(w['2'], w['13'])
+        w['15'] = w['11'] * 0.85
+        w['16'] = w['14'] + w['15']
+        w['17'] = w['1'] * 0.85
+        w['18'] = min(w['16'], w['17'])
+        return w['18']
 
     def title(f):
         return 'Form 1040'

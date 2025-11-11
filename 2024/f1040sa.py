@@ -7,7 +7,7 @@ class F1040sa(Form):
             f['2'] = f1040['11']
             f['3'] = f['2'] * .075
             f['4'] = max(0, f['1'] - f['3'])
-        f['5a'] = inputs['state_withholding'] + \
+        f['5a'] = inputs.get('state_withholding', 0) + \
                   inputs.get('extra_state_tax_payments', 0)
         f['5d'] = f.rowsum(['5a', '5b', '5c'])
         f['5e'] = min(f['5d'],
