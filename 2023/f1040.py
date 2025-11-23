@@ -131,7 +131,7 @@ class F1040(Form):
             f.comment['12'] = 'Standard deduction'
             f['12'] = std
 
-        if f['11']-f['12'] < f.SS_MAX or (f['11']-f['12'] < 2*f.SS_MAX and inputs['status'] == FilingStatus.JOINT):
+        if f['11']-f['12'] < f.BRACKET_LIMITS[inputs['status']][3]:
             f8995 = f.addForm(F8995(inputs, f, sd, sse))
             if f8995.mustFile():
                 f['13'] = f8995['15']
@@ -154,7 +154,6 @@ class F1040(Form):
         # Compute line s3_1 now because it's needed by AMT
         f.comment['s3_1'] = 'Foreign Tax Paid'
         foreign_tax = inputs.get('foreign_tax', 0)
-        # assert(foreign_tax < 300 or (foreign_tax < 600 and inputs['status'] == FilingStatus.JOINT))
         if foreign_tax:
             f['s3_1'] = foreign_tax
 
