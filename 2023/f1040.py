@@ -11,6 +11,7 @@ from f8812 import F8812
 from f8959 import F8959
 from f8960 import F8960
 from f8995a import F8995A
+from f8995 import F8995
 import copy
 import math
 import pprint
@@ -130,9 +131,14 @@ class F1040(Form):
             f.comment['12'] = 'Standard deduction'
             f['12'] = std
 
-        f8995a = f.addForm(F8995A(inputs, f, sd))
-        if f8995a.mustFile():
-            f['13'] = f8995a['39']
+        if f['11']-f['12'] < f.BRACKET_LIMITS[inputs['status']][3]:
+            f8995 = f.addForm(F8995(inputs, f, sd))
+            if f8995.mustFile():
+                f['13'] = f8995['15']
+        else:
+            f8995a = f.addForm(F8995A(inputs, f, sd))
+            if f8995a.mustFile():
+                f['13'] = f8995a['39']
 
         f['14'] = f['12'] + f['13']
 
