@@ -142,7 +142,7 @@ class F1040(Form):
             f['12'] = std
 
         if f['11']-f['12'] < f.BRACKET_LIMITS[inputs['status']][3]:
-            f8995 = f.addForm(F8995(inputs, f, sd, sse))
+            f8995 = f.addForm(F8995(inputs, f, sd))
             if f8995.mustFile():
                 f['13'] = f8995['15']
         else:
