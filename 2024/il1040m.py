@@ -1,5 +1,7 @@
 
-from form import Form
+from form import Form, FilingStatus
+from il1040 import IL1040
+import re
 
 class IL1040M(Form):
     """
@@ -10,29 +12,29 @@ class IL1040M(Form):
         f.must_file = True
         f.addForm(f)
 
-        # Additions (lines 1-20, see official Schedule M)
-        f.comment['1'] = 'Recapture of deductions (e.g., bonus depreciation)'
-        f['1'] = inputs.get('recapture_bonus_depr', 0)
-        f.comment['2'] = 'Other additions (see instructions)'
-        f['2'] = inputs.get('other_additions', 0)
-        # ... add more lines as needed for all official additions ...
+        # Additions (lines 1-10, see official Schedule M)
+        # Provide these lines as inputs to the form rather
+        # than here, as there is nothing to calculate
+        f.comment['12'] = 'Total Additions to IL income'
+        f['12'] = f.rowsum(['11', '10', '[1-9]'])
 
-        # Subtractions (lines 21-40, see official Schedule M)
-        f.comment['21'] = 'Retirement income subtraction'
-        f['21'] = inputs.get('retirement_income_sub', 0)
-        f.comment['22'] = 'Social Security income subtraction'
-        f['22'] = inputs.get('social_security_sub', 0)
-        f.comment['23'] = 'Other subtractions (see instructions)'
-        f['23'] = inputs.get('other_subtractions', 0)
-        # ... add more lines as needed for all official subtractions ...
+        # Subtractions to income
+        # Provide these lines as inputs to the form rather
+        # than here, except where calculations are needed
+        cap_529_contrib = 20000 if inputs['status'] == FilingStatus.JOINT else 10000
+        f['13'] = min(f['13a'], cap_529_contrib)
+        cap_able_contrib = 20000 if inputs['status'] == FilingStatus.JOINT else 10000
+        f['20'] = min(f['20a'], cap_able_contrib)
 
-        # Total additions
-        f.comment['A'] = 'Total Additions'
-        f['A'] = sum(f[i] for i in ['1','2']) # expand as needed
-        # Total subtractions
-        f.comment['B'] = 'Total Subtractions'
-        f['B'] = sum(f[i] for i in ['21','22','23']) # expand as needed
+        f['32'] = f.rowsum(['3[01]', '2[0-9]', '1[3-9]']) or None
+        f['33'] = f['32'] or None
 
-        # Net other subtractions for IL1040 line 7
-        f.comment['2'] = 'Other subtractions for IL1040 line 7'
-        f['2'] = f['B']
+        # Line 34: Sum of lines 34a through 34z
+        f['34'] = f.rowsum('34[a-z]') or None
+        f['35'] = f.rowsum('35[a-f]') or None
+
+        f.comment['42'] = 'Total Subtractions to IL income'
+        f['42'] = f.rowsum(['3[3-9]', '4[01]'])
+  
+    def title(f):
+        return 'Form IL-1040 Schedule M'
