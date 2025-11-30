@@ -2,6 +2,7 @@
 from form import Form, FilingStatus
 from il1040m import IL1040M
 from il1040e_eitc import IL1040E_EITC
+from il1040icr import IL1040ICR
 
 class IL1040(Form):
     PERSONAL_EXEMPTION = 2775  # 2024 IL value (example)
@@ -68,6 +69,33 @@ class IL1040(Form):
         # TODO schedule NR for part-year/non-resident adjustments
         f['11'] = max(0, f['9'] - f['10'])
         f['12'] = int(round(f['11'] * f.TAX_RATE))
+
+        # TODO line 13 schedule 4255
+
+        f.comment['14'] = 'IL Income Tax'
+        f['14'] = f.rowsum(['12', '13'])
+
+        # TODO line 15 schedule CR
+
+        icr = f.addForm(IL1040ICR(inputs, f))
+        f['16'] = icr['13']
+
+        # TODO line 17 schedule 1299-C
+
+        f['18'] = f.rowsum(['15', '16', '17'])
+        assert f['18'] < f['14'], "Total credits exceed tax!"
+
+        f['19'] = f['14'] - f['18']
+        # TODO line 20
+
+        f['21'] = 0. # I already pay for all the use tax
+
+        f['23'] = f.rowsum(['19', '20', '21', '22'])
+        f['24'] = f['23']
+
+
+
+
 
 
 
