@@ -1,6 +1,7 @@
 
 from form import Form, FilingStatus
 from il1040m import IL1040M
+from il1040e_eitc import IL1040E_EITC
 
 class IL1040(Form):
     PERSONAL_EXEMPTION = 2775  # 2024 IL value (example)
@@ -52,6 +53,23 @@ class IL1040(Form):
                 f['10a'] = 0
 
         f['10bc'] = inputs.get('age_blind_boxes', 0)*f.AGE_BLIND
+
+        # Line 10d: Earned Income Credit (Schedule IL-E/EITC)
+        e_eitc = f.addForm(IL1040E_EITC(inputs, f))
+        f.comment['10d'] = 'Earned Income Credit (Schedule IL-E/EITC)'
+        f['10d'] = e_eitc['1']
+
+        f['10'] = 0.
+        if inputs['status'] == FilingStatus.JOINT and f1040['11'] < 500000 or \
+           f1040['11'] < 250000:
+            f['10'] = f.rowsum(['10a', '10bc', '10d'])
+
+        f.comment['11'] = 'IL net income'
+        # TODO schedule NR for part-year/non-resident adjustments
+        f['11'] = max(0, f['9'] - f['10'])
+        f['12'] = int(round(f['11'] * f.TAX_RATE))
+
+
 
         # # Line 5: Social Security benefits and certain retirement income (Schedule M, line B)
         # f.comment['5'] = 'Social Security benefits and certain retirement income (Schedule M, line B)'
@@ -107,6 +125,8 @@ class IL1040(Form):
         # from il1040bus import IL1040BUS
         # from il1040use import IL1040USE
         # in_sched = f.addForm(IL1040IN(inputs, f))
+
+
         # bus_sched = f.addForm(IL1040BUS(inputs, f))
         # use_sched = f.addForm(IL1040USE(inputs, f))
 

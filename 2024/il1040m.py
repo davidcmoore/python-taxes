@@ -1,6 +1,6 @@
 
 from form import Form, FilingStatus
-from il1040 import IL1040
+# from il1040 import IL1040
 import re
 
 class IL1040M(Form):
