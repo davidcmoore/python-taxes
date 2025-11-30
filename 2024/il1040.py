@@ -93,10 +93,22 @@ class IL1040(Form):
         f['23'] = f.rowsum(['19', '20', '21', '22'])
         f['24'] = f['23']
 
+        # f['25'] and f['26'] are inputs
+        # I don't have K-1-T or K-1-P income/tax
 
+        f['29'] = e_eitc.get('9') or 0
+        f['30'] = e_eitc.get('12') or 0
+        f.comment['31'] = 'Total payments and refundable credit'
+        f['31'] = f.rowsum(['25', '26', '27', '28', '29', '30'])
 
-
-
+        if f['31'] >= f['24']:
+            f.comment['32'] = 'Refund (Line 31 minus Line 24)'
+            f['32'] = f['31'] - f['24']
+            f['33'] = 0
+        else:
+            f['32'] = 0
+            f.comment['33'] = 'Amount owed (Line 24 minus Line 31)'
+            f['33'] = f['24'] - f['31']
 
 
         # # Line 5: Social Security benefits and certain retirement income (Schedule M, line B)
