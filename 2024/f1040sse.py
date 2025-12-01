@@ -6,7 +6,7 @@ SS_WAGE_LIMIT = 168600
 class F1040sse(Form):
     def __init__(self, inputs):
         super(F1040sse, self).__init__(inputs)
-        self['2'] = inputs.get('business_income')
+        self['2'] = inputs.get('business_income', 0) - inputs.get('business_expenses', 0)
         self['3'] = self.rowsum(['1a', '1b', '2'])
         if self['3'] > 0:
             self['4a'] = self['3'] * 0.9235
