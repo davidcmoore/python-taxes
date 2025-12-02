@@ -28,7 +28,18 @@ class F1116(Form):
         f['3b'] = f1040['s1_26'] - (f1040.rowsum(['s1_1[125]', 's1_20']) or 0)
         f['3c'] = f.rowsum(['3a', '3b'])
         f['3d'] = inputs.get('foreign_investment_income')
-        f['3e'] = f1040['9']
+
+        # Gross income adds back business expenses and capital losses to total income
+        gross_income = f1040['9'] + (f.spouseSum(inputs, 'business_expenses') or 0)
+        if sched_d.mustFile():
+            assert(inputs.get('capital_gain_short', 0) >= 0)
+            assert(inputs.get('capital_gain_long', 0) >= 0)
+            gross_income += inputs.get('capital_loss_short', 0) + inputs.get('capital_loss_long', 0) \
+                             - inputs.get('capital_gain_carryover_short', 0) \
+                             - inputs.get('capital_gain_carryover_long', 0) \
+                             - f1040['7'] + sched_d['16']
+
+        f['3e'] = gross_income
         f['3f'] = f['3d'] / f['3e'] * 10000
         f['3g'] = f['3c'] * f['3f'] / 10000
         if f['3d'] > 5000 and sched_a['8e']:

@@ -49,7 +49,7 @@ class F1040(Form):
             sse = []
             for i in [0,1]:
                 inputs2 = copy.copy(inputs)
-                for j in ['wages', 'wages_ss', 'business_income']:
+                for j in ['wages', 'wages_ss', 'business_income', 'business_expenses']:
                     if j in inputs:
                         inputs2[j] = inputs[j][i]
                 x = F1040sse(inputs2)
@@ -95,7 +95,8 @@ class F1040(Form):
             f['7'] = inputs.get('capital_gain_dist')
 
         f['s1_1'] = inputs.get('state_refund_taxable')
-        f['s1_3'] = f.spouseSum(inputs, 'business_income')
+        f['s1_3'] = ((f.spouseSum(inputs, 'business_income') or 0) \
+                        - (f.spouseSum(inputs, 'business_expenses') or 0)) or None
         f['s1_7'] = inputs.get('unemployment')
         f['s1_9'] = f.rowsum(['s1_8[a-z]'])
 

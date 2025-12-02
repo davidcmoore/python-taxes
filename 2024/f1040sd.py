@@ -4,15 +4,17 @@ class F1040sd(Form):
     def __init__(f, inputs):
         super(F1040sd, f).__init__(inputs)
         if 'capital_gain_long' not in inputs \
+               and 'capital_loss_long' not in inputs \
                and 'capital_gain_short' not in inputs \
+               and 'capital_loss_short' not in inputs \
                and 'capital_gain_carryover_short' not in inputs \
                and 'capital_gain_carryover_long' not in inputs:
             return
         f.must_file = True
-        f['1'] = inputs.get('capital_gain_short')
+        f['1'] = inputs.get('capital_gain_short', 0) - inputs.get('capital_loss_short', 0)
         f['6'] = inputs.get('capital_gain_carryover_short')
         f['7'] = f.rowsum(['1', '2', '3', '4', '5', '6'])
-        f['8'] = inputs.get('capital_gain_long')
+        f['8'] = inputs.get('capital_gain_long', 0) - inputs.get('capital_loss_long', 0)
         f['13'] = inputs.get('capital_gain_dist')
         f['14'] = inputs.get('capital_gain_carryover_long')
         f['15'] = f.rowsum(['8', '9', '10', '11', '12', '13', '14'])
