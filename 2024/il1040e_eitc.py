@@ -2,7 +2,12 @@ from form import Form
 
 class IL1040E_EITC(Form):
     """
-    Illinois Schedule IL-E/EITC: Earned Income Credit (2024)
+    Schedule IL-E/EITC implementation for 2024
+
+    Developed by Stefano M. Canta (cantastefano@gmail.com).
+    This software is provided without any warranty, express or implied.
+    It is intended solely for the author's personal tax calculations and should not be relied upon for any other purpose.
+    Use at your own risk.
     """
     def __init__(f, inputs, il1040):
         super(IL1040E_EITC, f).__init__(inputs)

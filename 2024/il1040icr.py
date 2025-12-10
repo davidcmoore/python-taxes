@@ -1,9 +1,17 @@
-
 from form import Form
 
 class IL1040ICR(Form):
     """
-    Illinois Schedule ICR: Illinois Credits (2024)
+    Schedule IL-ICR implementation for 2024
+
+    Developed by Stefano M. Canta (cantastefano@gmail.com).
+    This software is provided without any warranty, express or implied.
+    It is intended solely for the author's personal tax calculations and should not be relied upon for any other purpose.
+    Use at your own risk.
+
+    Required inputs (keys in `inputs` dict):
+        - '4a': Property tax paid (float)
+        - '7a': School expense (float)
     """
     def __init__(f, inputs, il1040):
         super(IL1040ICR, f).__init__(inputs)

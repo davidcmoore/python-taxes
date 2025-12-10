@@ -5,7 +5,17 @@ import re
 
 class IL1040M(Form):
     """
-    Illinois Schedule M: Other Additions and Subtractions (2024)
+    Schedule IL-M implementation for 2024
+
+    Developed by Stefano M. Canta (cantastefano@gmail.com).
+    This software is provided without any warranty, express or implied.
+    It is intended solely for the author's personal tax calculations and should not be relied upon for any other purpose.
+    Use at your own risk.
+
+    Implemented inputs (keys in `inputs` dict):
+        - '13a': Contributions to IL 529 accounts (float)
+        - '20a': Contributions to IL ABLE accounts (float)
+        - '22': U.S. Treasury bonds, bills, notes, savings bonds, and U.S. agency interest (float)
     """
     def __init__(f, inputs, il1040):
         super(IL1040M, f).__init__(inputs)

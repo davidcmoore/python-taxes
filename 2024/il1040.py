@@ -1,11 +1,36 @@
-
 from form import Form, FilingStatus
 from il1040m import IL1040M
 from il1040e_eitc import IL1040E_EITC
 from il1040icr import IL1040ICR
 
 class IL1040(Form):
-    PERSONAL_EXEMPTION = 2775  # 2024 IL value (example)
+    """
+    Form IL-1040 implementation for 2024
+
+    Developed by Stefano M. Canta (cantastefano@gmail.com).
+    This software is provided without any warranty, express or implied.
+    It is intended solely for the author's personal tax calculations and should not be relied upon for any other purpose.
+    Use at your own risk.
+
+    This class represents the Illinois Individual Income Tax Return (Form IL-1040) for the tax year 2024.
+    It calculates Illinois state income tax based on federal AGI, Illinois-specific additions and subtractions,
+    exemptions, credits, and payments.
+    Required input parameters (passed via the `inputs` dictionary):
+    - 'status': Filing status, must be a value from the FilingStatus enum (e.g., SINGLE, JOINT, etc.).
+    - '2': Federally tax-exempt dividend and/or interest income.
+    - 'C': (optional, default 0) Used for exemption calculation (see instructions for line 10a).
+    - 'age_blind_boxes': (optional, default 0) Number of boxes checked for age 65 or older and/or blindness (multiplied by AGE_BLIND exemption).
+    - 'dependents': (optional, default 0) Number of dependents for exemption calculation.
+    - '25', '26': (optional) Payments and withholding amounts (used in lines 25 and 26).
+    - Additional keys may be required by sub-forms (e.g., IL1040M, IL1040E_EITC, IL1040ICR).
+    Arguments:
+        inputs (dict): Dictionary of input values required for the form calculations.
+        f1040 (Form): An instance of the federal Form 1040, used to obtain federal AGI and other values.
+    Note:
+        This implementation is intended for personal use and may not cover all edge cases or Illinois tax situations.
+        It relies on several sub-forms (IL1040M, IL1040E_EITC, IL1040ICR) for specific calculations.
+    """
+    PERSONAL_EXEMPTION = 2775  # 2024 IL value
     DEPENDENT_EXEMPTION = 2775
     AGE_BLIND = 1000
     TAX_RATE = 0.0495  # 2024 IL flat rate
@@ -109,66 +134,6 @@ class IL1040(Form):
             f['32'] = 0
             f.comment['33'] = 'Amount owed (Line 24 minus Line 31)'
             f['33'] = f['24'] - f['31']
-
-
-        # # Line 5: Social Security benefits and certain retirement income (Schedule M, line B)
-        # f.comment['5'] = 'Social Security benefits and certain retirement income (Schedule M, line B)'
-        # f['5'] = m['B']
-
-        # # Line 6: Other subtractions (Schedule M, line 2)
-        # f.comment['6'] = 'Other subtractions (Schedule M, line 2)'
-        # f['6'] = m['2']
-
-        # # Line 7: Illinois base income (Line 4 minus Lines 5 and 6)
-        # f.comment['7'] = 'Illinois base income (Line 4 minus Lines 5 and 6)'
-        # f['7'] = f['4'] - f['5'] - f['6']
-
-        # # Line 8: Exemptions (personal and dependent)
-        # if inputs['status'] in [FilingStatus.JOINT, FilingStatus.WIDOW]:
-        #     personal = 2
-        # else:
-        #     personal = 1
-        # f.comment['8'] = 'Exemptions (personal and dependent)'
-        # f['8'] = personal * f.PERSONAL_EXEMPTION + inputs.get('dependents', 0) * f.DEPENDENT_EXEMPTION
-
-        # # Line 9: Net income (Line 7 minus Line 8)
-        # f.comment['9'] = 'Net income (Line 7 minus Line 8)'
-        # f['9'] = max(0, f['7'] - f['8'])
-
-        # # Line 10: Tax (4.95% of Line 9)
-        # f.comment['10'] = 'Tax (4.95% of Line 9)'
-        # f['10'] = int(round(f['9'] * f.TAX_RATE))
-
-        # # Line 11: Tax after credits (apply ICR, CR, ED, 529)
-        # from il1040icr import IL1040ICR
-        # icr = f.addForm(IL1040ICR(inputs, f))
-        # from il1040cr import IL1040CR
-        # from il1040ed import IL1040ED
-        # from il1040529 import IL1040529
-        # cr = f.addForm(IL1040CR(inputs, f))
-        # ed = f.addForm(IL1040ED(inputs, f))
-        # s529 = f.addForm(IL1040529(inputs, f))
-        # total_credits = (icr['4'] or 0) + (cr['2'] or 0) + (ed['2'] or 0) + (s529['2'] or 0)
-        # f.comment['11'] = 'Tax after credits (Line 10 minus total credits)'
-        # f['11'] = max(0, f['10'] - total_credits)
-
-        # # Line 12: Payments (withholding, estimated, etc.)
-        # f.comment['12'] = 'Payments (withholding, estimated, etc.)'
-        # f['12'] = inputs.get('payments', 0)
-
-        # # Line 13: Refund or Amount Owed (Line 12 minus Line 11)
-        # f.comment['13'] = 'Refund or Amount Owed (Line 12 minus Line 11)'
-        # f['13'] = f['12'] - f['11']
-
-        # # Add interest/dividends and business income schedules
-        # from il1040in import IL1040IN
-        # from il1040bus import IL1040BUS
-        # from il1040use import IL1040USE
-        # in_sched = f.addForm(IL1040IN(inputs, f))
-
-
-        # bus_sched = f.addForm(IL1040BUS(inputs, f))
-        # use_sched = f.addForm(IL1040USE(inputs, f))
 
     def title(f):
         return 'Form IL-1040'
