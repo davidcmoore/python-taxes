@@ -9,7 +9,7 @@ class F8960(Form):
         f['2'] = f1040.get('3b')
         # TODO: annuities
         f['4a'] = f1040.rowsum(['s1_3', 's1_5'])
-        f['4b'] = -f1040['s1_3'] or None
+        f['4b'] = -inputs.get('nonpassive_business_net_income', f1040['s1_3']) or None
         f['4c'] = f.rowsum(['4a', '4b'])
         f['5a'] = f1040.rowsum(['7', 's1_4'])
         f['5d'] = f.rowsum(['5a', '5b', '5c'])

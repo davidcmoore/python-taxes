@@ -5,7 +5,8 @@ class F8995(Form):
     def __init__(f, inputs, f1040, sched_d):
         super(F8995, f).__init__(inputs)
 
-        f['2'] = f1040['s1_3'] - (f1040.rowsum(['s1_1[567]']) or 0)
+        f['2'] = f1040['s1_3'] - (f1040.rowsum(['s1_1[567]']) or 0) \
+                   + inputs.get('additional_qbi', 0)
         f['4'] = max(0, f['2'] + f['3'])
         f['5'] = f['4'] * 0.20
         f['6'] = inputs.get('section_199A_dividends')
