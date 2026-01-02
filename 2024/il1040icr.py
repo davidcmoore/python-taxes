@@ -27,14 +27,14 @@ class IL1040ICR(Form):
         # TODO line 4e business credit
         f['4e'] = 0
         f['4f'] = f['4a'] - f['4e']
-        f['4g'] = round(0.05*f['4f'])
+        f['4g'] = 0.05*f['4f']
 
         f['5'] = min(f['3'], f['4g'])
         f['6'] = f['3'] - f['5']
 
         # f['7a'] is given
-        f['7c'] = max(0, f['7a'] - 250.)
-        f['7d'] = min(750, round(0.25 * f['7c']))
+        f['7c'] = max(0., f['7a'] - 250.)
+        f['7d'] = min(750., 0.25*f['7c'])
         f['8'] = min(f['6'], f['7d'])
         f['9'] = f['6'] - f['8']
 

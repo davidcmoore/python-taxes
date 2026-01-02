@@ -1,7 +1,7 @@
 python-taxes
 by David Moore
 
-Python code for computing Federal and CA state taxes.
+Python code for computing Federal and state taxes (CA and IL).
 
 Licensed under the GNU GPL v2.0. Please contact me if you are planning to
 use or redistribute this code for any serious purpose.

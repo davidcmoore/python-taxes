@@ -46,7 +46,7 @@ class IL1040(Form):
 
         # Line 2: Federally tax-exempt interest and dividends
         f.comment['2'] = 'Federally tax-exempt interest and dividends'
-        f['2'] = inputs.get('tax_exempt_interest', 0) + inputs.get('tax_exempt_dividends', 0)
+        f['2'] = f1040['2a']
 
         # Line 3: Other additions (Schedule M, line A)
         m = f.addForm(IL1040M(inputs, f))
@@ -66,14 +66,14 @@ class IL1040(Form):
 
         lineC = inputs.get('C', 0)
         if inputs['status'] == FilingStatus.JOINT:
-            if lineC == 0 or f['9'] <= lineC*2775:
+            if lineC == 0 or f['9'] <= lineC*f.PERSONAL_EXEMPTION:
                 f['10a'] = 2 * f.PERSONAL_EXEMPTION
-            elif lineC == 1 and f['9'] > 2775:
+            elif lineC == 1 and f['9'] > f.PERSONAL_EXEMPTION:
                 f['10a'] = f.PERSONAL_EXEMPTION
             else:
                 f['10a'] = 0
         else:
-            if lineC == 0 or f['9'] <= 2775:
+            if lineC == 0 or f['9'] <= f.PERSONAL_EXEMPTION:
                 f['10a'] = f.PERSONAL_EXEMPTION
             else:
                 f['10a'] = 0
@@ -93,7 +93,7 @@ class IL1040(Form):
         f.comment['11'] = 'IL net income'
         # TODO schedule NR for part-year/non-resident adjustments
         f['11'] = max(0, f['9'] - f['10'])
-        f['12'] = int(round(f['11'] * f.TAX_RATE))
+        f['12'] = f['11']*f.TAX_RATE
 
         # TODO line 13 schedule 4255
 
@@ -121,8 +121,8 @@ class IL1040(Form):
         # f['25'] and f['26'] are inputs
         # I don't have K-1-T or K-1-P income/tax
 
-        f['29'] = e_eitc.get('9') or 0
-        f['30'] = e_eitc.get('12') or 0
+        f['29'] = e_eitc['9']
+        f['30'] = e_eitc['12']
         f.comment['31'] = 'Total payments and refundable credit'
         f['31'] = f.rowsum(['25', '26', '27', '28', '29', '30'])
 

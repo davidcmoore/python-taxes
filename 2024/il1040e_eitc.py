@@ -16,7 +16,7 @@ class IL1040E_EITC(Form):
 
         # Line 1: Dependent exemption allowance
         f.comment['1'] = 'Dependent exemption allowance'
-        f['1'] = inputs.get('dependent_care_persons', 0)*il1040.DEPENDENT_EXEMPTION
+        f['1'] = inputs.get('dependent_exemptions', 0)*il1040.DEPENDENT_EXEMPTION
 
         # TODO finish IL EITC
 
