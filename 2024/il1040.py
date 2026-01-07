@@ -17,7 +17,7 @@ class IL1040(Form):
     exemptions, credits, and payments.
     Required input parameters (passed via the `inputs` dictionary):
     - 'status': Filing status, must be a value from the FilingStatus enum (e.g., SINGLE, JOINT, etc.).
-    - 'C': (optional, default 0) Used for exemption calculation (see instructions for line 10a).
+    - 'can_be_dependent': (optional, default 0) Number of boxes in line 'C' (see instructions for line 10a).
     - 'age_blind_boxes': (optional, default 0) Number of boxes checked for age 65 or older and/or blindness (multiplied by AGE_BLIND exemption).
     - 'dependent_exemptions': (optional, default 0) Number of dependent exemptions calculation.
     - '25', '26': (optional) Payments and withholding amounts (used in lines 25 and 26).
@@ -63,7 +63,8 @@ class IL1040(Form):
         f.comment['9'] = 'Illinois Base Income'
         f['9'] = max(0, f['4'] - f['8'])
 
-        lineC = inputs.get('C', 0)
+        lineC = inputs.get('can_be_dependent', 0)
+        assert lineC in (0, 1, 2), "can_be_dependent must be 0, 1, or 2"
         if inputs['status'] == FilingStatus.JOINT:
             if lineC == 0 or f['9'] <= lineC*f.PERSONAL_EXEMPTION:
                 f['10a'] = 2 * f.PERSONAL_EXEMPTION
