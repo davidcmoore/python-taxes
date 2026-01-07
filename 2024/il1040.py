@@ -17,10 +17,9 @@ class IL1040(Form):
     exemptions, credits, and payments.
     Required input parameters (passed via the `inputs` dictionary):
     - 'status': Filing status, must be a value from the FilingStatus enum (e.g., SINGLE, JOINT, etc.).
-    - '2': Federally tax-exempt dividend and/or interest income.
     - 'C': (optional, default 0) Used for exemption calculation (see instructions for line 10a).
     - 'age_blind_boxes': (optional, default 0) Number of boxes checked for age 65 or older and/or blindness (multiplied by AGE_BLIND exemption).
-    - 'dependents': (optional, default 0) Number of dependents for exemption calculation.
+    - 'dependent_exemptions': (optional, default 0) Number of dependent exemptions calculation.
     - '25', '26': (optional) Payments and withholding amounts (used in lines 25 and 26).
     - Additional keys may be required by sub-forms (e.g., IL1040M, IL1040E_EITC, IL1040ICR).
     Arguments:
