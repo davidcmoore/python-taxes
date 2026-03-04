@@ -18,7 +18,7 @@ class F8960(Form):
             # This is one example of a "reasonable method allocation" but
             # not the only way.
             # Note: this only works for state income tax, not sales tax
-            f['9b'] = f['8'] * sched_a['5e'] / f1040['11a']
+            f['9b'] = f['8'] * min(sched_a['5e'], sched_a['5a']) / f1040['11a']
         f['9d'] = f.rowsum(['9a', '9b', '9c'])
         f['11'] = f.rowsum(['9d', '10'])
         f['12'] = max(0, f['8'] - f['11'])
